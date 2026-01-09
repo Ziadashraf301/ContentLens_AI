@@ -1,0 +1,50 @@
+import os
+import shutil
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from ..workflows.process_document import run_document_workflow
+from .schemas import AnalysisResponse
+from ..core.config import settings
+from ..core.logging import logger
+
+router = APIRouter()
+
+@router.post("/process-document", response_model=AnalysisResponse)
+async def process_document(
+    file: UploadFile = File(...),
+    user_request: str = Form("Analyze this document")
+):
+    """
+    1. Receives file and user intent from Frontend.
+    2. Saves file to a temporary location.
+    3. Executes the LangGraph workflow.
+    4. Cleans up and returns results.
+    """
+    
+    # Create temp directory if not exists
+    temp_dir = "temp_uploads"
+    os.makedirs(temp_dir, exist_ok=True)
+    file_path = os.path.join(temp_dir, file.filename)
+
+    try:
+        # Save file locally for processing
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        logger.info(f"API: Received file {file.filename}. Request: {user_request}")
+
+        # Trigger the full workflow
+        result = await run_document_workflow(file_path, user_request)
+
+        if "error" in result and not result.get("extraction"):
+             raise HTTPException(status_code=500, detail=result["error"])
+
+        return result
+
+    except Exception as e:
+        logger.error(f"API Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    
+    finally:
+        # Cleanup the temp file after processing
+        if os.path.exists(file_path):
+            os.remove(file_path)

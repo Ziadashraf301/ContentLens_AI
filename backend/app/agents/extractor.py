@@ -1,5 +1,5 @@
 from langchain_community.llms import Ollama
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from ..core.config import settings
 from ..core.logging import logger

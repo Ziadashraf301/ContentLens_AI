@@ -1,6 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 from app.core.config import settings
+import os
 
 # Logger Formatter
 formatter = logging.Formatter(
@@ -11,6 +12,8 @@ formatter = logging.Formatter(
 # Console Handler
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(formatter)
+
+os.makedirs("logs", exist_ok=True)
 
 # File Handler (Rotating)
 # Prevents logs from growing forever

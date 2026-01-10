@@ -33,7 +33,7 @@ def translation_node(state: AgentState):
     agent = TranslatorAgent()
     # Translate the summary if it exists, otherwise the extraction dict
     text_to_translate = state["summary"] if state.get("summary") else str(state["extraction"])
-    translation = agent.run(text_to_translate)
+    translation = agent.run(text_to_translate, state.get("source_lang"))
     return {"translation": translation}
 
 def analysis_node(state: AgentState):

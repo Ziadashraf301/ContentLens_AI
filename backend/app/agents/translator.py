@@ -31,7 +31,7 @@ class TranslatorAgent:
             template=self.template
         )
 
-    def run(self, content: str, source_lang: str):
+    def run(self, content: str, source_lang: str | None = None):
         if source_lang == "ar":
             return f"Note: Content is already in Arabic. Original: {content}"
         

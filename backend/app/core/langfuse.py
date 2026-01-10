@@ -7,9 +7,5 @@ def get_langfuse_callback():
     This allows you to see every LLM call, token count, and error in Langfuse UI.
     """
     if settings.LANGFUSE_PUBLIC_KEY and settings.LANGFUSE_SECRET_KEY:
-        return CallbackHandler(
-            public_key=settings.LANGFUSE_PUBLIC_KEY,
-            secret_key=settings.LANGFUSE_SECRET_KEY,
-            host=settings.LANGFUSE_HOST
-        )
+        return CallbackHandler()
     return None

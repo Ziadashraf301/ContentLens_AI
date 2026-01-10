@@ -3,6 +3,12 @@ from ..graphs.document_graph import app_graph
 from ..core.logging import logger
 from ..tools.language import detect_language
 from ..tools.validators import BriefValidator
+from ..core.langfuse import get_langfuse_callback
+from ..core.config import settings
+
+# Initialize the observer
+langfuse_handler = get_langfuse_callback()
+
 
 async def run_document_workflow(file_path: str, user_request: str):
     """
@@ -41,9 +47,11 @@ async def run_document_workflow(file_path: str, user_request: str):
 
         # 5. Execute the Brain (LangGraph)
         logger.info("Workflow: Handing off to LangGraph...")
-        
+
+        config = {"callbacks": [langfuse_handler]}
+
         # ainvoke is used for asynchronous execution
-        final_state = await app_graph.ainvoke(initial_state)
+        final_state = await app_graph.ainvoke(initial_state, config=config)
         
         return final_state
 

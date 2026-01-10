@@ -1,4 +1,4 @@
-from langfuse.callback import CallbackHandler
+from langfuse.langchain import CallbackHandler
 from .config import settings
 
 def get_langfuse_callback():

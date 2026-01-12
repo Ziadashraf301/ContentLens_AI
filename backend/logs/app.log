@@ -1,0 +1,92 @@
+2026-01-10 22:51:15 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_AI_Engineer.pdf. Request: Analyze this document and give recommindations
+2026-01-10 22:51:15 | ERROR | ContentLens_AI | FileLoader error on temp_uploads/Ziad_Ashraf_AI_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-01-10 22:51:15 | ERROR | ContentLens_AI | Workflow Critical Error: Failed to process temp_uploads/Ziad_Ashraf_AI_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-01-10 22:51:15 | ERROR | ContentLens_AI | API Error: 500: Failed to process temp_uploads/Ziad_Ashraf_AI_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-01-10 22:55:30 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_AI_Engineer.pdf. Request: Analyze this document
+2026-01-10 22:55:30 | ERROR | ContentLens_AI | FileLoader error on temp_uploads/Ziad_Ashraf_AI_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-01-10 22:55:30 | ERROR | ContentLens_AI | Workflow Critical Error: Failed to process temp_uploads/Ziad_Ashraf_AI_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-01-10 22:55:30 | ERROR | ContentLens_AI | API Error: 500: Failed to process temp_uploads/Ziad_Ashraf_AI_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-01-10 22:57:00 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_AI_Engineer.pdf. Request: Analyze this document
+2026-01-10 22:57:00 | INFO | ContentLens_AI | Loading PDF file: temp_uploads/Ziad_Ashraf_AI_Engineer.pdf
+2026-01-10 22:57:00 | INFO | ContentLens_AI | Validator: Found 0 brief-related keywords.
+2026-01-10 22:57:00 | WARNING | ContentLens_AI | Validator: Document does not look like a professional brief.
+2026-01-10 22:57:00 | WARNING | ContentLens_AI | Quality Check: File at temp_uploads/Ziad_Ashraf_AI_Engineer.pdf has low brief-keyword density.
+2026-01-10 22:57:00 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-01-10 22:57:00 | INFO | ContentLens_AI | Workflow: File processing started. Language: en
+2026-01-10 22:57:00 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-01-10 22:57:00 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-01-10 22:57:00 | INFO | ContentLens_AI | Agent: Extractor starting work...
+2026-01-10 23:04:12 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_AI_Engineer.pdf. Request: Analyze this document
+2026-01-10 23:04:12 | INFO | ContentLens_AI | Loading PDF file: temp_uploads/Ziad_Ashraf_AI_Engineer.pdf
+2026-01-10 23:04:12 | INFO | ContentLens_AI | Validator: Found 0 brief-related keywords.
+2026-01-10 23:04:12 | WARNING | ContentLens_AI | Validator: Document does not look like a professional brief.
+2026-01-10 23:04:12 | WARNING | ContentLens_AI | Quality Check: File at temp_uploads/Ziad_Ashraf_AI_Engineer.pdf has low brief-keyword density.
+2026-01-10 23:04:12 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-01-10 23:04:12 | INFO | ContentLens_AI | Workflow: File processing started. Language: en
+2026-01-10 23:04:12 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-01-10 23:04:12 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-01-10 23:04:12 | INFO | ContentLens_AI | Agent: Extractor starting work...
+2026-01-10 23:04:49 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_AI_Engineer.pdf. Request: Analyze this document
+2026-01-10 23:04:49 | INFO | ContentLens_AI | Loading PDF file: temp_uploads/Ziad_Ashraf_AI_Engineer.pdf
+2026-01-10 23:04:49 | INFO | ContentLens_AI | Validator: Found 0 brief-related keywords.
+2026-01-10 23:04:49 | WARNING | ContentLens_AI | Validator: Document does not look like a professional brief.
+2026-01-10 23:04:49 | WARNING | ContentLens_AI | Quality Check: File at temp_uploads/Ziad_Ashraf_AI_Engineer.pdf has low brief-keyword density.
+2026-01-10 23:04:49 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-01-10 23:04:49 | INFO | ContentLens_AI | Workflow: File processing started. Language: en
+2026-01-10 23:04:49 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-01-10 23:04:49 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-01-10 23:04:49 | INFO | ContentLens_AI | Agent: Extractor starting work...
+2026-01-10 23:05:47 | INFO | ContentLens_AI | Agent: Extraction completed successfully.
+2026-01-10 23:05:47 | INFO | ContentLens_AI | --- NODE: ROUTER ---
+2026-01-10 23:05:47 | INFO | ContentLens_AI | Router: Classifying intent for: 'Analyze this document'
+2026-01-10 23:06:01 | INFO | ContentLens_AI | Router: Directed to -> summarize
+2026-01-10 23:06:01 | INFO | ContentLens_AI | --- NODE: SUMMARIZATION ---
+2026-01-10 23:06:01 | INFO | ContentLens_AI | Agent: Summarizer condensing data...
+2026-01-10 23:09:16 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_AI_Engineer.pdf. Request: Perform a detailed technical analysis of my skills and identify three gaps I need to fill to become a Senior AI Engineer.
+2026-01-10 23:09:16 | INFO | ContentLens_AI | Loading PDF file: temp_uploads/Ziad_Ashraf_AI_Engineer.pdf
+2026-01-10 23:09:16 | INFO | ContentLens_AI | Validator: Found 0 brief-related keywords.
+2026-01-10 23:09:16 | WARNING | ContentLens_AI | Validator: Document does not look like a professional brief.
+2026-01-10 23:09:16 | WARNING | ContentLens_AI | Quality Check: File at temp_uploads/Ziad_Ashraf_AI_Engineer.pdf has low brief-keyword density.
+2026-01-10 23:09:16 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-01-10 23:09:16 | INFO | ContentLens_AI | Workflow: File processing started. Language: en
+2026-01-10 23:09:16 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-01-10 23:09:16 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-01-10 23:09:16 | INFO | ContentLens_AI | Agent: Extractor starting work...
+2026-01-10 23:10:39 | INFO | ContentLens_AI | Agent: Extraction completed successfully.
+2026-01-10 23:10:39 | INFO | ContentLens_AI | --- NODE: ROUTER ---
+2026-01-10 23:10:39 | INFO | ContentLens_AI | Router: Classifying intent for: 'Perform a detailed technical analysis of my skills and identify three gaps I need to fill to become a Senior AI Engineer.'
+2026-01-10 23:10:43 | INFO | ContentLens_AI | Router: Directed to -> analyze
+2026-01-10 23:10:43 | INFO | ContentLens_AI | --- NODE: ANALYSIS/RECOMMENDATION ---
+2026-01-10 23:10:43 | INFO | ContentLens_AI | Agent: Analyzer performing strategic review...
+2026-01-10 23:14:54 | INFO | ContentLens_AI | API: Received file market.docx. Request: Analyze the creative requirements and target audience of this brief. Does the 'dark-mode' aesthetic actually align with tech professionals, and what are the potential risks of this strategy?
+2026-01-10 23:14:54 | ERROR | ContentLens_AI | FileLoader error on temp_uploads/market.docx: python-docx is required to load DOCX files
+2026-01-10 23:14:54 | ERROR | ContentLens_AI | Workflow Critical Error: Failed to process temp_uploads/market.docx: python-docx is required to load DOCX files
+2026-01-10 23:14:54 | ERROR | ContentLens_AI | API Error: 500: Failed to process temp_uploads/market.docx: python-docx is required to load DOCX files
+2026-01-10 23:15:26 | INFO | ContentLens_AI | API: Received file market.docx. Request: Analyze the creative requirements and target audience of this brief. Does the 'dark-mode' aesthetic actually align with tech professionals, and what are the potential risks of this strategy?
+2026-01-10 23:15:26 | INFO | ContentLens_AI | Loading DOCX file: temp_uploads/market.docx
+2026-01-10 23:15:26 | INFO | ContentLens_AI | Validator: Found 4 brief-related keywords.
+2026-01-10 23:15:26 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-01-10 23:15:26 | INFO | ContentLens_AI | Workflow: File processing started. Language: en
+2026-01-10 23:15:26 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-01-10 23:15:26 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-01-10 23:15:26 | INFO | ContentLens_AI | Agent: Extractor starting work...
+2026-01-10 23:17:25 | INFO | ContentLens_AI | Agent: Extraction completed successfully.
+2026-01-10 23:17:25 | INFO | ContentLens_AI | --- NODE: ROUTER ---
+2026-01-10 23:17:25 | INFO | ContentLens_AI | Router: Classifying intent for: 'Analyze the creative requirements and target audience of this brief. Does the 'dark-mode' aesthetic actually align with tech professionals, and what are the potential risks of this strategy?'
+2026-01-10 23:17:30 | INFO | ContentLens_AI | Router: Directed to -> analyze
+2026-01-10 23:17:30 | INFO | ContentLens_AI | --- NODE: ANALYSIS/RECOMMENDATION ---
+2026-01-10 23:17:30 | INFO | ContentLens_AI | Agent: Analyzer performing strategic review...
+2026-01-12 19:14:32 | INFO | ContentLens_AI | API: Received file market.docx. Request: Analyze this brief and summarize it, please. 
+2026-01-12 19:14:32 | INFO | ContentLens_AI | Loading DOCX file: temp_uploads/market.docx
+2026-01-12 19:14:32 | INFO | ContentLens_AI | Validator: Found 4 brief-related keywords.
+2026-01-12 19:14:33 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-01-12 19:14:33 | INFO | ContentLens_AI | Workflow: File processing started. Language: en
+2026-01-12 19:14:33 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-01-12 19:14:33 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-01-12 19:14:33 | INFO | ContentLens_AI | Agent: Extractor starting work...
+2026-01-12 19:16:40 | INFO | ContentLens_AI | Agent: Extraction completed successfully.
+2026-01-12 19:16:40 | INFO | ContentLens_AI | --- NODE: ROUTER ---
+2026-01-12 19:16:40 | INFO | ContentLens_AI | Router: Classifying intent for: 'Analyze this brief and summarize it, please. '
+2026-01-12 19:16:55 | INFO | ContentLens_AI | Router: Directed to -> analyze
+2026-01-12 19:16:55 | INFO | ContentLens_AI | --- NODE: ANALYSIS/RECOMMENDATION ---
+2026-01-12 19:16:55 | INFO | ContentLens_AI | Agent: Analyzer performing strategic review...

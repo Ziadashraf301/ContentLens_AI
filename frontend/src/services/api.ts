@@ -11,7 +11,8 @@ export const analyzeDocument = async (file: File, request: string): Promise<any>
   });
 
   if (!response.ok) {
-    throw new Error('Analysis failed');
+    const text = await response.text();
+    throw new Error(`Analysis failed: ${response.status} ${text}`);
   }
 
   return response.json();

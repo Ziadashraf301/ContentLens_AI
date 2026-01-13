@@ -20,52 +20,80 @@ def extraction_node(state: AgentState):
 def router_node(state: AgentState):
     logger.info("--- NODE: ROUTER ---")
     agent = RouterAgent()
-    decision = agent.decide(state["user_request"])
-    return {"next_step": decision}
+    decisions  = agent.decide(state["user_request"])
+    return {"next_steps": decisions, "current_step_index": 0}
 
 def summarization_node(state: AgentState):
     logger.info("--- NODE: SUMMARIZATION ---")
     agent = SummarizerAgent()
     summary = agent.run(state["extraction"])
-    return {"summary": summary}
+    
+    # Increment step counter
+    current_index = state.get("current_step_index", 0)
+    return {
+        "summary": summary,
+        "current_step_index": current_index + 1 
+    }
 
 def translation_node(state: AgentState):
     logger.info("--- NODE: TRANSLATION ---")
     agent = TranslatorAgent()
-    # Translate the summary if it exists, otherwise the extraction dict
     text_to_translate = state["summary"] if state.get("summary") else str(state["extraction"])
     translation = agent.run(text_to_translate, state.get("source_lang"))
-    return {"translation": translation}
+    
+    # Increment step counter
+    current_index = state.get("current_step_index", 0)
+    return {
+        "translation": translation,
+        "current_step_index": current_index + 1  
+    }
 
 def analysis_node(state: AgentState):
     logger.info("--- NODE: ANALYSIS ---")
     agent = AnalyzerAgent()
     analysis_result = agent.run(state["extraction"])
-    return {"analysis": analysis_result}
-
+    
+    # Increment step counter
+    current_index = state.get("current_step_index", 0)
+    return {
+        "analysis": analysis_result,
+        "current_step_index": current_index + 1 
+    }
 
 def recommendation_node(state: AgentState):
     logger.info("--- NODE: RECOMMENDATION ---")
     agent = RecommenderAgent()
     input_content = state.get("extraction") or state.get("analysis") or ""
     recommendations = agent.run(input_content)
-    return {"recommendation": recommendations}
+    
+    # Increment step counter
+    current_index = state.get("current_step_index", 0)
+    return {
+        "recommendation": recommendations,
+        "current_step_index": current_index + 1 
+    }
 
 def routing_logic(state: AgentState):
     """
-    Directs the flow based on the router's decision.
+    Routes to the next task in the list, or END if all done
     """
-    step = state.get("next_step", "end")
-    if step in ["summarize", "translate", "analyze", "recommend"]:
-        return step
+    steps = state.get("next_steps", [])
+    index = state.get("current_step_index", 0)
+    
+    if index < len(steps):
+        current_task = steps[index]
+        logger.info(f"Routing: Task {index + 1}/{len(steps)} -> {current_task}")
+        return current_task
+    
+    logger.info("Routing: All tasks completed, going to END")
     return "end"
 
-# --- Graph Construction ---
 
+# --- Graph Construction ---
 def create_graph():
     workflow = StateGraph(AgentState)
 
-    # 1. Add All Nodes
+    # Add nodes
     workflow.add_node("extract", extraction_node)
     workflow.add_node("router", router_node)
     workflow.add_node("summarize", summarization_node)
@@ -73,11 +101,11 @@ def create_graph():
     workflow.add_node("analyze", analysis_node)
     workflow.add_node("recommend", recommendation_node)
 
-    # 2. Define the Entry and Static Edge
+    # Entry point
     workflow.set_entry_point("extract")
     workflow.add_edge("extract", "router")
 
-    # 3. Define Conditional Edges from Router
+    # Conditional routing from router
     workflow.add_conditional_edges(
         "router",
         routing_logic,
@@ -90,11 +118,11 @@ def create_graph():
         }
     )
 
-    # 4. All task nodes lead to END
-    workflow.add_edge("summarize", END)
-    workflow.add_edge("translate", END)
-    workflow.add_edge("analyze", END)
-    workflow.add_edge("recommend", END)
+    # After each task, go back to router to check for next task
+    workflow.add_edge("summarize", "router")
+    workflow.add_edge("translate", "router")
+    workflow.add_edge("analyze", "router")
+    workflow.add_edge("recommend", "router")
 
     return workflow.compile()
 

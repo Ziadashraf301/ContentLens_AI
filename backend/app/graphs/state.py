@@ -7,9 +7,12 @@ class AgentState(TypedDict):
     raw_text: str
     user_request: str
     source_lang: str           
-    next_step: str
     extraction: Optional[dict]
     summary: Optional[str]
     translation: Optional[str]
     analysis: Optional[str]
+    recommendation: Optional[str]
+    next_steps: Optional[List[str]]
+    current_step_index: Optional[int]
+    source_lang: Optional[str]
     errors: List[str]

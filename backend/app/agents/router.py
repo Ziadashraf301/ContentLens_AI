@@ -13,17 +13,27 @@ class RouterAgent:
         self.template = """
         SYSTEM:
         You are an Intent Classifier for a Media AI system. 
-        Your job is to read a User Request and decide which agent should handle it next.
+        Your job is to read a User Request and decide which agents should handle it.
+        You can select MULTIPLE agents if the request requires it.
 
-        OPTIONS:
-        1. 'summarize': Use if the user wants a shorter version, a summary, or a "TL;DR".
-        2. 'translate': Use if the user mentions Arabic or another language.
-        3. 'analyze': Use if the user wants a deep dive, strategic audit, or risk assessment.
-        4. 'recommend': Use if the user wants ideas, suggestions, or next steps.
+        AVAILABLE AGENTS:
+        1. 'summarize': For shorter version, summary, or TL;DR
+        2. 'translate': For translation to Arabic or other languages
+        3. 'analyze': For deep dive, strategic audit, or risk assessment
+        4. 'recommend': For ideas, suggestions, or next steps
+
+        RULES:
+        - Return a comma-separated list of agents needed
+        - Order matters: run them in the order you list
+        - Examples:
+          * "Analyze this brief" → analyze
+          * "Translate to Arabic and analyze" → translate,analyze
+          * "Give me a full report" → summarize,analyze,recommend
+          * "Translate this" → translate
 
         USER REQUEST: {user_request}
 
-        DECISION (Return only the word):
+        AGENTS NEEDED (comma-separated list only, no explanations):
         """
         
         self.prompt = PromptTemplate(
@@ -31,21 +41,67 @@ class RouterAgent:
             template=self.template
         )
 
-    def decide(self, user_request: str) -> str:
+    def decide(self, user_request: str) -> list:
+        """
+        Returns a list of tasks to execute in order.
+        Example: ["translate", "analyze"]
+        """
         try:
             logger.info(f"Router: Classifying intent for: '{user_request}'")
             chain = self.prompt | self.llm
-            decision = chain.invoke({"user_request": user_request}).strip().lower()
+            response = chain.invoke({"user_request": user_request}).strip().lower()
             
-            # Validation logic to ensure the graph doesn't break
+            # Parse comma-separated response
+            tasks = [task.strip() for task in response.split(",")]
+            
+            # Validate and filter
             valid_steps = ["summarize", "translate", "analyze", "recommend"]
-            for step in valid_steps:
-                if step in decision:
-                    logger.info(f"Router: Directed to -> {step}")
-                    return step
+            filtered_tasks = []
             
-            logger.warning("Router: No clear intent found, defaulting to 'summarize'")
-            return "summarize"
+            for task in tasks:
+                for valid in valid_steps:
+                    if valid in task and valid not in filtered_tasks:
+                        filtered_tasks.append(valid)
+                        break
+            
+            # Fallback logic based on keywords if LLM fails
+            if not filtered_tasks:
+                logger.warning("Router: LLM returned unclear response, using keyword fallback")
+                filtered_tasks = self._keyword_fallback(user_request)
+            
+            logger.info(f"Router: Directed to -> {filtered_tasks}")
+            return filtered_tasks
+            
         except Exception as e:
-            logger.error(f"Router Error: {e}")
-            return "summarize"
+            logger.error(f"Router Error: {e}, using keyword fallback")
+            return self._keyword_fallback(user_request)
+    
+    def _keyword_fallback(self, user_request: str) -> list:
+        """
+        Keyword-based fallback if LLM fails
+        """
+        request_lower = user_request.lower()
+        tasks = []
+        
+        # Check for translation request
+        if any(word in request_lower for word in ["translate", "arabic", "عربي", "ترجم"]):
+            tasks.append("translate")
+        
+        # Check for analysis request
+        if any(word in request_lower for word in ["analyze", "analysis", "audit", "assess", "review", "brief"]):
+            tasks.append("analyze")
+        
+        # Check for summary request
+        if any(word in request_lower for word in ["summarize", "summary", "tldr", "brief overview", "short"]):
+            if "summarize" not in tasks:
+                tasks.insert(0, "summarize")
+        
+        # Check for recommendations
+        if any(word in request_lower for word in ["recommend", "suggestion", "ideas", "what should", "next steps"]):
+            tasks.append("recommend")
+        
+        # Default to analyze if nothing matches
+        if not tasks:
+            tasks = ["analyze"]
+        
+        return tasks

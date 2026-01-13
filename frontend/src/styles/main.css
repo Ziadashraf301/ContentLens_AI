@@ -5,24 +5,20 @@
 }
 
 :root {
-  /* Refined, Professional Palette */
   --accent: #0066ff;
   --accent-dark: #0052cc;
   --bg-app: #f4f7f9;
   --bg-card: #ffffff;
   
-  /* Neutral scale for depth */
   --slate-900: #0f172a;
   --slate-700: #334155;
   --slate-500: #64748b;
   --slate-200: #e2e8f0;
   --slate-100: #f1f5f9;
 
-  /* Functional Colors */
   --success: #10b981;
   --danger: #e11d48;
   
-  /* Subtle Shadows */
   --shadow-subtle: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.05);
   --shadow-hover: 0 8px 24px rgba(149, 157, 165, 0.2);
 }
@@ -41,9 +37,8 @@ body {
   margin: 0 auto;
 }
 
-/* Header: Removed the generic AI gradient background */
 header {
-  text-align: left; /* Alignment change makes it feel less like a landing page template */
+  text-align: left; 
   margin-bottom: 2.5rem;
   padding-left: 0.5rem;
 }
@@ -61,7 +56,6 @@ header p {
   font-size: 1.1rem;
 }
 
-/* Main Content Card */
 main {
   background: var(--bg-card);
   border-radius: 12px;
@@ -70,7 +64,6 @@ main {
   border: 1px solid var(--slate-200);
 }
 
-/* Uploader UI */
 .uploader-container {
   display: flex;
   flex-direction: column;
@@ -82,7 +75,6 @@ main {
   font-weight: 600;
 }
 
-/* Custom File Input: More "App-like" than "Web-like" */
 .uploader-container input[type="file"] {
   border: 2px solid var(--slate-100);
   background: var(--slate-100);
@@ -108,7 +100,6 @@ main {
   cursor: pointer;
 }
 
-/* Textarea: Professional Focus State */
 .uploader-container textarea {
   width: 100%;
   padding: 1rem;
@@ -126,7 +117,6 @@ main {
   ring: 3px solid rgba(0, 102, 255, 0.1);
 }
 
-/* Button: Solid color is more modern than gradients */
 .uploader-container button {
   background: var(--accent);
   color: white;
@@ -136,7 +126,7 @@ main {
   border: none;
   cursor: pointer;
   transition: background 0.2s;
-  align-self: flex-start; /* Don't force full width */
+  align-self: flex-start; 
 }
 
 .uploader-container button:hover {
@@ -173,7 +163,6 @@ main {
   overflow-x: auto;
 }
 
-/* Arabic Text: Clean, no-nonsense RTL */
 .arabic-text {
   direction: rtl;
   text-align: right;
@@ -182,7 +171,6 @@ main {
   background: white !important;
 }
 
-/* Loader */
 .spinner {
   width: 40px;
   height: 40px;
@@ -196,7 +184,6 @@ main {
   to { transform: rotate(360deg); }
 }
 
-/* Responsive fixes */
 @media (max-width: 640px) {
   main { padding: 1.5rem; }
   header h1 { font-size: 1.75rem; }

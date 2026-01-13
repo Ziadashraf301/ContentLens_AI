@@ -18,10 +18,11 @@ def extraction_node(state: AgentState):
     return {"extraction": result}
 
 def router_node(state: AgentState):
-    logger.info("--- NODE: ROUTER ---")
-    agent = RouterAgent()
-    decisions  = agent.decide(state["user_request"])
-    return {"next_steps": decisions, "current_step_index": 0}
+    if not state.get("next_steps"):
+        agent = RouterAgent()
+        decisions = agent.decide(state["user_request"])
+        return {"next_steps": decisions, "current_step_index": 0}
+    return {}
 
 def summarization_node(state: AgentState):
     logger.info("--- NODE: SUMMARIZATION ---")

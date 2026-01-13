@@ -1,4 +1,4 @@
-from backend.app.graphs.document_graph import routing_logic, create_graph
+from app.graphs.document_graph import routing_logic, create_graph
 
 
 def test_routing_logic():

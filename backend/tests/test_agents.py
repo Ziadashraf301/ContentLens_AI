@@ -1,6 +1,6 @@
-from backend.app.agents.extractor import ExtractorAgent
-from backend.app.agents.analyzer import AnalyzerAgent
-from backend.app.core.config import settings
+from app.agents.extractor import ExtractorAgent
+from app.agents.analyzer import AnalyzerAgent
+from app.core.config import settings
 
 
 def test_agents_can_instantiate():

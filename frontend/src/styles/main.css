@@ -4,11 +4,36 @@
   box-sizing: border-box;
 }
 
+:root {
+  /* Refined, Professional Palette */
+  --accent: #0066ff;
+  --accent-dark: #0052cc;
+  --bg-app: #f4f7f9;
+  --bg-card: #ffffff;
+  
+  /* Neutral scale for depth */
+  --slate-900: #0f172a;
+  --slate-700: #334155;
+  --slate-500: #64748b;
+  --slate-200: #e2e8f0;
+  --slate-100: #f1f5f9;
+
+  /* Functional Colors */
+  --success: #10b981;
+  --danger: #e11d48;
+  
+  /* Subtle Shadows */
+  --shadow-subtle: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-hover: 0 8px 24px rgba(149, 157, 165, 0.2);
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--slate-900);
+  line-height: 1.5;
+  padding: 4rem 1rem;
+  -webkit-font-smoothing: antialiased;
 }
 
 .main-app {
@@ -16,138 +41,164 @@ body {
   margin: 0 auto;
 }
 
+/* Header: Removed the generic AI gradient background */
 header {
-  text-align: center;
-  color: white;
-  margin-bottom: 40px;
+  text-align: left; /* Alignment change makes it feel less like a landing page template */
+  margin-bottom: 2.5rem;
+  padding-left: 0.5rem;
 }
 
 header h1 {
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   font-weight: 700;
+  color: var(--slate-900);
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
 }
 
+header p {
+  color: var(--slate-500);
+  font-size: 1.1rem;
+}
+
+/* Main Content Card */
 main {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-subtle);
+  border: 1px solid var(--slate-200);
 }
 
+/* Uploader UI */
 .uploader-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
+.uploader-container h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Custom File Input: More "App-like" than "Web-like" */
 .uploader-container input[type="file"] {
-  padding: 10px;
-  border: 2px dashed #667eea;
+  border: 2px solid var(--slate-100);
+  background: var(--slate-100);
+  padding: 1.5rem;
   border-radius: 8px;
-  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
 }
 
-.uploader-container textarea {
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  min-height: 80px;
-  font-family: inherit;
-  resize: vertical;
+.uploader-container input[type="file"]:hover {
+  border-color: var(--accent);
+  background: #fff;
 }
 
-.uploader-container button {
-  padding: 14px 28px;
-  background: #667eea;
+.uploader-container input[type="file"]::file-selector-button {
+  background: var(--slate-900);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  margin-right: 1rem;
   cursor: pointer;
-  transition: background 0.3s;
 }
 
-.uploader-container button:hover:not(:disabled) {
-  background: #5568d3;
+/* Textarea: Professional Focus State */
+.uploader-container textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--slate-200);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.uploader-container textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  ring: 3px solid rgba(0, 102, 255, 0.1);
+}
+
+/* Button: Solid color is more modern than gradients */
+.uploader-container button {
+  background: var(--accent);
+  color: white;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-start; /* Don't force full width */
+}
+
+.uploader-container button:hover {
+  background: var(--accent-dark);
 }
 
 .uploader-container button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+  background: var(--slate-200);
+  color: var(--slate-500);
 }
 
-.error {
-  color: #e53e3e;
-  background: #fff5f5;
-  padding: 12px;
-  border-radius: 8px;
-  margin: 20px 0;
-  border-left: 4px solid #e53e3e;
-}
-
-.result-card {
-  margin-top: 30px;
-}
-
+/* Result Sections */
 .result-card section {
-  margin-bottom: 30px;
-  padding: 20px;
-  background: #f7fafc;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--slate-100);
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border: 1px solid var(--slate-200);
 }
 
 .result-card h3 {
-  margin-bottom: 15px;
-  color: #2d3748;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--slate-900);
 }
 
 .result-card pre {
-  background: #2d3748;
-  color: #68d391;
-  padding: 15px;
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 1.5rem;
   border-radius: 6px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.85rem;
   overflow-x: auto;
-  font-size: 14px;
 }
 
-.arabic-text p {
-  font-size: 1.1rem;
-  line-height: 1.8;
+/* Arabic Text: Clean, no-nonsense RTL */
+.arabic-text {
+  direction: rtl;
   text-align: right;
+  border-right: 4px solid var(--accent) !important;
+  border-left: none !important;
+  background: white !important;
 }
 
-.analysis-box {
-  background: #edf2f7 !important;
-}
-
-.loader-overlay {
-  text-align: center;
-  padding: 40px;
-}
-
+/* Loader */
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--slate-200);
+  border-top-color: var(--accent);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-.fade-in {
-  animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Responsive fixes */
+@media (max-width: 640px) {
+  main { padding: 1.5rem; }
+  header h1 { font-size: 1.75rem; }
+  .uploader-container button { width: 100%; }
 }

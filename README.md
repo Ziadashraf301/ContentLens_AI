@@ -89,7 +89,7 @@ npm install
 npm start
 ```
 
-Open the UI at http://localhost:3000 by default.
+Open the UI at http://localhost:3000 by default, or visit your deployed domain. For production, prefer using a DNS name (e.g., https://app.example.com) and keep `REACT_APP_API_URL` blank so the frontend uses same-origin relative API paths.
 
 ---
 

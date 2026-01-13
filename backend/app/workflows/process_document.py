@@ -27,6 +27,8 @@ async def run_document_workflow(file_path: str, user_request: str):
         # We use the validator to clean up extra whitespace/junk
         clean_text = BriefValidator.sanitize_text(extracted_text)
 
+        print(clean_text)
+
         if not BriefValidator.is_valid_brief(clean_text):
             # We don't stop the flow, but we log a warning for the audit trail
             logger.warning(f"Quality Check: File at {file_path} has low brief-keyword density.")

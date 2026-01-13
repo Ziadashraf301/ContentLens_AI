@@ -1,7 +1,7 @@
 import React from 'react';
-import { useUpload } from './hooks/useUpload';
-import { FileUploader } from './components/FileUploader';
-import { ResultCard } from './components/ResultCard';
+import { useUpload } from '../hooks/useUpload';
+import { FileUploader } from '../components/FileUploader';
+import { ResultCard } from '../components/ResultCard';
 
 const App: React.FC = () => {
   const { handleUpload, loading, result, error } = useUpload();

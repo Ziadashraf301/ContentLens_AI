@@ -7,7 +7,7 @@ python-multipart==0.0.6
 langchain==0.1.0
 langchain-community==0.0.10
 langgraph==0.0.15
-langfuse==2.0.0
+langfuse==3.11.2
 pydantic-settings==2.1.0
 
 # LLM Provider

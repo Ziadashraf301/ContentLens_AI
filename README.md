@@ -4,7 +4,7 @@
 
 **ContentLens AI** is a developer-focused open-source toolkit for extracting, analyzing, and summarizing information from documents using modern LLMs and document-processing tools. It provides a FastAPI backend that processes uploads (PDF, DOCX, TXT, images), runs an LLM-based workflow for extraction, summarization, translation, and analysis, and a React-based frontend for uploading files and visualizing results.
 
-![ContentLens AI Logo](images/contentlens_Ai.png)
+![ContentLens AI Logo](images/ContentLens_AI.png)
 
 ---
 
@@ -29,7 +29,7 @@ ContentLens AI helps developers and teams quickly gain insights from unstructure
 - Recommendation engine for prioritized, actionable suggestions
 - Observability integration (Langfuse hooks are available in config)
 - Lightweight React frontend with file uploader and results page
-- Tests and basic logging with `loguru`
+- Tests and logging
 
 ---
 

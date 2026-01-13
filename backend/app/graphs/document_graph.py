@@ -5,6 +5,7 @@ from ..agents.router import RouterAgent
 from ..agents.summarizer import SummarizerAgent
 from ..agents.translator import TranslatorAgent
 from ..agents.analyzer import AnalyzerAgent
+from ..agents.recommender import RecommenderAgent
 from ..core.logging import logger
 
 # --- Node Functions ---
@@ -37,12 +38,18 @@ def translation_node(state: AgentState):
     return {"translation": translation}
 
 def analysis_node(state: AgentState):
-    logger.info("--- NODE: ANALYSIS/RECOMMENDATION ---")
+    logger.info("--- NODE: ANALYSIS ---")
     agent = AnalyzerAgent()
-    # Analysis is performed on the structured extraction
     analysis_result = agent.run(state["extraction"])
-    # We can store this in analysis or recommendation state keys
     return {"analysis": analysis_result}
+
+
+def recommendation_node(state: AgentState):
+    logger.info("--- NODE: RECOMMENDATION ---")
+    agent = RecommenderAgent()
+    input_content = state.get("extraction") or state.get("analysis") or ""
+    recommendations = agent.run(input_content)
+    return {"recommendation": recommendations}
 
 def routing_logic(state: AgentState):
     """
@@ -64,6 +71,7 @@ def create_graph():
     workflow.add_node("summarize", summarization_node)
     workflow.add_node("translate", translation_node)
     workflow.add_node("analyze", analysis_node)
+    workflow.add_node("recommend", recommendation_node)
 
     # 2. Define the Entry and Static Edge
     workflow.set_entry_point("extract")
@@ -77,7 +85,7 @@ def create_graph():
             "summarize": "summarize",
             "translate": "translate",
             "analyze": "analyze",
-            "recommend": "analyze",
+            "recommend": "recommend",
             "end": END
         }
     )
@@ -86,6 +94,7 @@ def create_graph():
     workflow.add_edge("summarize", END)
     workflow.add_edge("translate", END)
     workflow.add_edge("analyze", END)
+    workflow.add_edge("recommend", END)
 
     return workflow.compile()
 

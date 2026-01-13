@@ -26,6 +26,7 @@ ContentLens AI helps developers and teams quickly gain insights from unstructure
 - LangChain / LangGraph-based workflows that orchestrate extractors, analyzers, and summarizers
 - OCR support (via Tesseract) for scanned images and PDFs
 - Configurable LLM settings (Ollama models configurable via env vars)
+- Recommendation engine for prioritized, actionable suggestions
 - Observability integration (Langfuse hooks are available in config)
 - Lightweight React frontend with file uploader and results page
 - Tests and basic logging with `loguru`

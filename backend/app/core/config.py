@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     OLLAMA_MODEL_SUMMARIZER: str = "llama3.1"
     OLLAMA_MODEL_TRANSLATOR: str = "mistral"
     OLLAMA_MODEL_ANALYZER: str = "llama3.1"
+    OLLAMA_MODEL_RECOMMENDER: str = "llama3.1"
 
     # Langfuse (Observability)
     LANGFUSE_PUBLIC_KEY: Optional[str] = None

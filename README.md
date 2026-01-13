@@ -89,7 +89,7 @@ npm install
 npm start
 ```
 
-Open the UI at http://localhost:3000 by default, or visit your deployed domain. For production, prefer using a DNS name (e.g., https://app.example.com) and keep `REACT_APP_API_URL` blank so the frontend uses same-origin relative API paths.
+Open the UI at http://localhost:3000 by default, or visit your deployed domain.
 
 ---
 
@@ -215,6 +215,3 @@ If you'd like to propose a larger design or road-map change, please open an issu
 
 - Tesseract OCR: on Windows install the Tesseract binary and ensure `tesseract.exe` is in your PATH; on macOS use `brew install tesseract`.
 - LLM runtime: The project assumes you have access to an Ollama instance or equivalent LLM endpoint. Adjust `OLLAMA_BASE_URL` and model names in `.env` accordingly.
-- Security: For production deployments, secure your API and avoid using wildcard CORS origins.
-
----

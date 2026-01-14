@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # Langfuse (Observability)
     LANGFUSE_PUBLIC_KEY: Optional[str] = None
     LANGFUSE_SECRET_KEY: Optional[str] = None
-    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+    LANGFUSE_BASE_URL: str = "https://cloud.langfuse.com"
 
     # File Processing
     MAX_FILE_SIZE_MB: int = 20

@@ -151,46 +151,46 @@ def routing_logic(state: AgentState):
 def create_graph():
     workflow = StateGraph(AgentState)
 
-    # Add nodes
-    workflow.add_node("extract", extraction_node)
-    workflow.add_node("router", router_node)
-    workflow.add_node("summarize", summarization_node)
-    workflow.add_node("translate", translation_node)
-    workflow.add_node("analyze", analysis_node)
-    workflow.add_node("recommend", recommendation_node)
-    workflow.add_node("ideate", ideation_node)
-    workflow.add_node("copywrite", copywriter_node)
-    workflow.add_node("compliance", compliance_node)
+    # Add nodes (use distinct node names to avoid collision with channels)
+    workflow.add_node("node_extract", extraction_node)
+    workflow.add_node("node_router", router_node)
+    workflow.add_node("node_summarize", summarization_node)
+    workflow.add_node("node_translate", translation_node)
+    workflow.add_node("node_analyze", analysis_node)
+    workflow.add_node("node_recommend", recommendation_node)
+    workflow.add_node("node_ideate", ideation_node)
+    workflow.add_node("node_copywrite", copywriter_node)
+    workflow.add_node("node_compliance", compliance_node)
 
     # Entry point
-    workflow.set_entry_point("extract")
-    workflow.add_edge("extract", "router")
+    workflow.set_entry_point("node_extract")
+    workflow.add_edge("node_extract", "node_router")
 
     # Conditional routing from router
     # Use distinct channel names to avoid collisions with node names
     workflow.add_conditional_edges(
-        "router",
+        "node_router",
         routing_logic,
         {
-            "to_summarize": "summarize",
-            "to_translate": "translate",
-            "to_analyze": "analyze",
-            "to_recommend": "recommend",
-            "to_ideate": "ideate",
-            "to_copywrite": "copywrite",
-            "to_compliance": "compliance",
+            "to_summarize": "node_summarize",
+            "to_translate": "node_translate",
+            "to_analyze": "node_analyze",
+            "to_recommend": "node_recommend",
+            "to_ideate": "node_ideate",
+            "to_copywrite": "node_copywrite",
+            "to_compliance": "node_compliance",
             "end": END
         }
     )
 
     # After each task, go back to router to check for next task
-    workflow.add_edge("summarize", "router")
-    workflow.add_edge("translate", "router")
-    workflow.add_edge("analyze", "router")
-    workflow.add_edge("recommend", "router")
-    workflow.add_edge("ideate", "router")
-    workflow.add_edge("copywrite", "router")
-    workflow.add_edge("compliance", "router")
+    workflow.add_edge("node_summarize", "node_router")
+    workflow.add_edge("node_translate", "node_router")
+    workflow.add_edge("node_analyze", "node_router")
+    workflow.add_edge("node_recommend", "node_router")
+    workflow.add_edge("node_ideate", "node_router")
+    workflow.add_edge("node_copywrite", "node_router")
+    workflow.add_edge("node_compliance", "node_router")
 
     return workflow.compile()
 

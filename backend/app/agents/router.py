@@ -21,6 +21,9 @@ class RouterAgent:
         2. 'translate': For translation to Arabic or other languages
         3. 'analyze': For deep dive, strategic audit, or risk assessment
         4. 'recommend': For ideas, suggestions, or next steps
+        5. 'ideate': For marketing campaign ideas and themes
+        6. 'copywrite': For drafting marketing copy (emails, ads, landing pages)
+        7. 'compliance': For checking content against privacy and marketing regulations
 
         RULES:
         - Return a comma-separated list of agents needed
@@ -55,7 +58,7 @@ class RouterAgent:
             tasks = [task.strip() for task in response.split(",")]
             
             # Validate and filter
-            valid_steps = ["summarize", "translate", "analyze", "recommend"]
+            valid_steps = ["summarize", "translate", "analyze", "recommend", "ideate", "copywrite", "compliance"]
             filtered_tasks = []
             
             for task in tasks:
@@ -99,6 +102,18 @@ class RouterAgent:
         # Check for recommendations
         if any(word in request_lower for word in ["recommend", "suggestion", "ideas", "what should", "next steps"]):
             tasks.append("recommend")
+
+        # Marketing ideation
+        if any(word in request_lower for word in ["idea", "ideas", "campaign", "headline", "tagline", "concept"]):
+            tasks.append("ideate")
+
+        # Copywriting hints
+        if any(word in request_lower for word in ["email", "subject", "copy", "landing", "ad", "headline", "cta"]):
+            tasks.append("copywrite")
+
+        # Compliance checks
+        if any(word in request_lower for word in ["gdpr", "can-spam", "privacy", "compliance", "opt-out", "unsubscribe"]):
+            tasks.append("compliance")
         
         # Default to analyze if nothing matches
         if not tasks:

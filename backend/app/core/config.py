@@ -24,6 +24,14 @@ class Settings(BaseSettings):
     OLLAMA_MODEL_ANALYZER: str = "llama3.1"
     OLLAMA_MODEL_RECOMMENDER: str = "llama3.1"
 
+    # Marketing / additional models
+    OLLAMA_MODEL_IDEATION: str = "llama3.1"
+    OLLAMA_MODEL_COPYWRITER: str = "llama3.1"
+
+    # Marketing policy flags
+    MARKETING_REQUIRE_CONSENT: bool = True
+    MARKETING_REQUIRE_HUMAN_APPROVAL: bool = True
+
     # Langfuse (Observability)
     LANGFUSE_PUBLIC_KEY: Optional[str] = None
     LANGFUSE_SECRET_KEY: Optional[str] = None

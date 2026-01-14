@@ -1,31 +1,24 @@
-from langfuse.langchain import CallbackHandler
-from .config import settings
 from langfuse import Langfuse
+from langfuse.langchain import CallbackHandler
+from app.core.config import settings
 
-langfuse = None
+_langfuse_client = None
+_langfuse_callback = None
 
-if settings.LANGFUSE_PUBLIC_KEY and settings.LANGFUSE_SECRET_KEY:
-    langfuse = Langfuse(
-        public_key=settings.LANGFUSE_PUBLIC_KEY,
-        secret_key=settings.LANGFUSE_SECRET_KEY,
-        host=settings.LANGFUSE_BASE_URL,
-    )
 
-if langfuse:
-    try:
-        langfuse.trace(
-            name="startup-check",
-            metadata={"service": "ContentLens_AI"}
+def init_langfuse():
+    global _langfuse_client, _langfuse_callback
+
+    if settings.LANGFUSE_PUBLIC_KEY and settings.LANGFUSE_SECRET_KEY:
+        _langfuse_client = Langfuse(
+            public_key=settings.LANGFUSE_PUBLIC_KEY,
+            secret_key=settings.LANGFUSE_SECRET_KEY,
+            host=settings.LANGFUSE_BASE_URL,
         )
-        print("Langfuse is connected ✅")
-    except Exception as e:
-        print("Langfuse connection failed ❌", e)
-    
+
+        # Create ONE callback instance
+        _langfuse_callback = CallbackHandler()
+
+
 def get_langfuse_callback():
-    """
-    Returns a callback handler for LangChain/LangGraph.
-    This allows you to see every LLM call, token count, and error in Langfuse UI.
-    """
-    if langfuse:
-        return CallbackHandler()
-    return None
+    return _langfuse_callback

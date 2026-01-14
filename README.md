@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/Ziadashraf301/ContentLens_AI/actions/workflows/ci.yml/badge.svg)
 
-**ContentLens AI** is a developer-focused open-source toolkit for extracting, analyzing, and summarizing information from documents using modern LLMs and document-processing tools. It provides a FastAPI backend that processes uploads (PDF, DOCX, TXT, images), runs an LLM-based workflow for extraction, summarization, translation, and analysis, and a React-based frontend for uploading files and visualizing results.
+**ContentLens** is a marketing-focused platform that helps teams extract, analyze, and summarize insights from documents and content using AI. It leverages LangGraph and LangChain to orchestrate multi-agent workflows, and Ollama to run large language models locally or in the cloud, ensuring fast, secure, and scalable AI-powered content processing. The platform includes a FastAPI backend to handle uploads (PDF, DOCX, TXT, images) and a React-based frontend for document upload and visualization of insights.
 
 ![ContentLens AI Logo](images/ContentLens_AI.png)
 
@@ -10,13 +10,13 @@
 
 ## 🔍 Project Purpose
 
-ContentLens AI helps developers and teams quickly gain insights from unstructured documents. It is designed for:
+ContentLens AI empowers marketing teams and content creators to transform raw documents into actionable insights quickly. It is designed for:
 
-- Document analysis and information extraction (text, tables, metadata)
-- Summarization and intent-based question answering
-- OCR for scanned documents and images
-- Translating and analyzing documents into actionable insights
-- Providing a simple web UI and REST API to integrate into applications
+- Extracting key information from marketing briefs, reports, and media assets
+- Summarizing content and generating insights for campaigns
+- Performing OCR on scanned marketing documents and images
+- Translating and analyzing documents to inform strategy and messaging
+- Running intelligent, multi-agent workflows via LangGraph and LangChain orchestrations
 
 ---
 

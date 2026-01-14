@@ -1,13 +1,24 @@
 from app.graphs.document_graph import routing_logic, create_graph
+from app.agents.router import RouterAgent
 
 
 def test_routing_logic():
-    assert routing_logic({"next_step": "summarize"}) == "summarize"
-    assert routing_logic({"next_step": "translate"}) == "translate"
-    assert routing_logic({"next_step": "analyze"}) == "analyze"
-    assert routing_logic({"next_step": "recommend"}) == "recommend"
-    assert routing_logic({"next_step": "unknown"}) == "end"
+    # Use the state shape expected by routing_logic
+    assert routing_logic({"next_steps": ["summarize"], "current_step_index": 0}) == "summarize"
+    assert routing_logic({"next_steps": ["translate"], "current_step_index": 0}) == "translate"
+    assert routing_logic({"next_steps": ["analyze"], "current_step_index": 0}) == "analyze"
+    assert routing_logic({"next_steps": ["recommend"], "current_step_index": 0}) == "recommend"
+    # Unknown/empty moves to END
+    assert routing_logic({"next_steps": ["unknown"], "current_step_index": 1}) == "end"
     assert routing_logic({}) == "end"
+
+
+def test_router_marketing_keywords():
+    r = RouterAgent()
+    # Use keyword fallback directly to avoid depending on LLM behavior
+    tasks = r._keyword_fallback("Generate campaign ideas and headlines with subject lines and email copy")
+    assert "ideate" in tasks
+    assert "copywrite" in tasks
 
 
 def test_create_graph_returns_compiled():

@@ -6,6 +6,9 @@ from ..agents.summarizer import SummarizerAgent
 from ..agents.translator import TranslatorAgent
 from ..agents.analyzer import AnalyzerAgent
 from ..agents.recommender import RecommenderAgent
+from ..agents.ideation import IdeationAgent
+from ..agents.copywriter import CopywriterAgent
+from ..agents.compliance import ComplianceAgent
 from ..core.logging import logger
 
 # --- Node Functions ---
@@ -74,6 +77,47 @@ def recommendation_node(state: AgentState):
         "current_step_index": current_index + 1 
     }
 
+
+def ideation_node(state: AgentState):
+    logger.info("--- NODE: IDEATION ---")
+    agent = IdeationAgent()
+    input_content = state.get("extraction") or state.get("raw_text") or ""
+    ideas = agent.run(input_content)
+
+    current_index = state.get("current_step_index", 0)
+    return {
+        "ideation": ideas,
+        "current_step_index": current_index + 1
+    }
+
+
+def copywriter_node(state: AgentState):
+    logger.info("--- NODE: COPYWRITER ---")
+    agent = CopywriterAgent()
+    # Prefer an explicit brief, else use the summary or extraction
+    brief = state.get("user_request") or state.get("summary") or str(state.get("extraction", ""))
+    copy = agent.run(brief)
+
+    current_index = state.get("current_step_index", 0)
+    return {
+        "copy": copy,
+        "current_step_index": current_index + 1
+    }
+
+
+def compliance_node(state: AgentState):
+    logger.info("--- NODE: COMPLIANCE ---")
+    agent = ComplianceAgent()
+    # Check the copy first if present, else the summary or extraction
+    to_check = state.get("copy") or state.get("summary") or str(state.get("extraction", ""))
+    compliance_report = agent.run(to_check)
+
+    current_index = state.get("current_step_index", 0)
+    return {
+        "compliance": compliance_report,
+        "current_step_index": current_index + 1
+    }
+
 def routing_logic(state: AgentState):
     """
     Routes to the next task in the list, or END if all done
@@ -101,6 +145,9 @@ def create_graph():
     workflow.add_node("translate", translation_node)
     workflow.add_node("analyze", analysis_node)
     workflow.add_node("recommend", recommendation_node)
+    workflow.add_node("ideate", ideation_node)
+    workflow.add_node("copywrite", copywriter_node)
+    workflow.add_node("compliance", compliance_node)
 
     # Entry point
     workflow.set_entry_point("extract")
@@ -115,6 +162,9 @@ def create_graph():
             "translate": "translate",
             "analyze": "analyze",
             "recommend": "recommend",
+            "ideate": "ideate",
+            "copywrite": "copywrite",
+            "compliance": "compliance",
             "end": END
         }
     )
@@ -124,6 +174,9 @@ def create_graph():
     workflow.add_edge("translate", "router")
     workflow.add_edge("analyze", "router")
     workflow.add_edge("recommend", "router")
+    workflow.add_edge("ideate", "router")
+    workflow.add_edge("copywrite", "router")
+    workflow.add_edge("compliance", "router")
 
     return workflow.compile()
 

@@ -20,6 +20,19 @@ ContentLens AI helps developers and teams quickly gain insights from unstructure
 
 ---
 
+## 🎯 Intended Use & Marketing Focus
+
+**Important:** This multi-agent system is designed to help marketing teams rapidly prototype and build document-driven marketing materials, generate summaries and insights, and accelerate content development for authorized campaigns. It is suitable for content ideation, internal research, and marketing asset production when used responsibly.
+
+Please follow these responsible marketing guidelines:
+- **Consent & opt-in:** Only use content and data for marketing when you have explicit consent or a lawful basis; do not use the tool to send unsolicited messages or spam.
+- **No targeted deception:** Avoid using outputs to manipulate, deceive, or covertly profile individuals for targeted persuasion.
+- **Privacy & data minimization:** Do not upload sensitive PII or regulated data unless strictly necessary and properly secured.
+- **Human review & QA:** Always review, edit, and fact-check generated content to ensure brand alignment and accuracy.
+- **Compliance & transparency:** Adhere to applicable marketing regulations, platform policies, and transparently disclose AI-assisted content when required.
+
+---
+
 ## ✨ Features
 
 - REST API to upload and process documents (multipart file uploads)
@@ -27,6 +40,7 @@ ContentLens AI helps developers and teams quickly gain insights from unstructure
 - OCR support (via Tesseract) for scanned images and PDFs
 - Configurable LLM settings (Ollama models configurable via env vars)
 - Recommendation engine for prioritized, actionable suggestions
+- Marketing agent support (ideation, copywriting, compliance checks) to accelerate marketing workflows
 - Observability integration (Langfuse hooks are available in config)
 - Lightweight React frontend with file uploader and results page
 - Tests and logging
@@ -199,6 +213,8 @@ Contributions are welcome! A suggested workflow:
 2. Open a pull request with a clear description of changes.
 3. Add tests for new functionality and ensure existing tests pass.
 4. Keep code style consistent — use meaningful commit messages.
+
+**Responsible use note:** Please respect the project's intended use — features that support **responsible marketing workflows** (content generation, summarization, campaign research) are welcome, but they must include safeguards for consent, anti-spam measures, and privacy compliance. Avoid building features that enable unsolicited outreach or deceptive targeting.
 
 If you'd like to propose a larger design or road-map change, please open an issue first so we can discuss the approach.
 

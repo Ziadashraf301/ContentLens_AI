@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from .api.routes import router as api_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.langfuse import init_langfuse
 
+init_langfuse()
 app = FastAPI(title="ContentLens AI - Backend")
 
 # Add CORS middleware

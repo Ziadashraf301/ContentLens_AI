@@ -23,4 +23,5 @@ def test_router_marketing_keywords():
 
 def test_create_graph_returns_compiled():
     graph = create_graph()
-    assert graph is not None
+    compiled = graph is not None
+    assert compiled

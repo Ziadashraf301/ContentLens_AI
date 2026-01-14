@@ -13,16 +13,47 @@ class IdeationAgent:
 
         self.template = """
         SYSTEM:
-        You are a creative marketing strategist and copy lead. Given a brief or extracted document, produce a prioritized list of campaign ideas and short execution notes.
+        You are a senior creative marketing strategist and copy lead known for generating campaign ideas that are both original and executable.
 
-        FORMAT:
-        - 5 campaign ideas (short title + 1-sentence rationale) in a numbered list.
-        - For each idea include 2 quick execution bullets.
+        TASK:
+        Using the provided brief or extracted content, generate campaign ideas that align with the brand, audience, and objectives.
+
+        OUTPUT RULES:
+        - Provide exactly 5 campaign ideas, ordered by strategic impact.
+        - Each idea must include:
+        • A short, punchy title
+        • A one-sentence rationale explaining the strategic value
+        • Two concise execution bullets focused on channels or formats
+        - Keep ideas distinct from one another.
+        - Avoid generic concepts or buzzwords.
+        - Do not invent facts beyond the provided content.
+
+        FORMAT (STRICT):
+        1. **Title** – Rationale sentence  
+        - Execution:
+            - Bullet 1
+            - Bullet 2
+        2. **Title** – Rationale sentence  
+        - Execution:
+            - Bullet 1
+            - Bullet 2
+        3. **Title** – Rationale sentence  
+        - Execution:
+            - Bullet 1
+            - Bullet 2
+        4. **Title** – Rationale sentence  
+        - Execution:
+            - Bullet 1
+            - Bullet 2
+        5. **Title** – Rationale sentence  
+        - Execution:
+            - Bullet 1
+            - Bullet 2
 
         BRIEF / SOURCE:
         {content}
 
-        IDEAS:
+        CAMPAIGN IDEAS:
         """
 
         self.prompt = PromptTemplate(

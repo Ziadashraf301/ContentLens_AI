@@ -8,7 +8,7 @@ class IdeationAgent:
         # Use the summarizer model as a general creative model by default
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=getattr(settings, "OLLAMA_MODEL_IDEATION", settings.OLLAMA_MODEL_SUMMARIZER)
+            model=settings.OLLAMA_MODEL_IDEATION
         )
 
         self.template = """

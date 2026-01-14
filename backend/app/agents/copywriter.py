@@ -7,7 +7,7 @@ class CopywriterAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=getattr(settings, "OLLAMA_MODEL_COPYWRITER", settings.OLLAMA_MODEL_SUMMARIZER)
+            model=settings.OLLAMA_MODEL_COPYWRITER
         )
 
         self.template = """

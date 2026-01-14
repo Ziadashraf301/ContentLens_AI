@@ -21,15 +21,12 @@ npm install
 ## Environment
 Set `REACT_APP_API_URL` to override the API base URL if needed. By default the frontend will use same-origin requests.
 
-You can also enable marketing workflow UI/features with `REACT_APP_ENABLE_MARKETING_WORKFLOW=true`.
-
 Examples:
 
 ```bash
 # Run in development, pointing to local backend
 # Windows PowerShell
 $env:REACT_APP_API_URL = "http://localhost:8000"
-$env:REACT_APP_ENABLE_MARKETING_WORKFLOW = "true"
 npm start
 ```
 

@@ -4,13 +4,20 @@ from app.core.config import settings
 import time
 from typing import Optional, Dict, Any
 
+_langfuse_client = None
 _langfuse_callback = None
 
 
 def init_langfuse():
-    global _langfuse_callback
+    global _langfuse_client, _langfuse_callback
 
     if settings.LANGFUSE_PUBLIC_KEY and settings.LANGFUSE_SECRET_KEY:
+        _langfuse_client = Langfuse(
+            public_key=settings.LANGFUSE_PUBLIC_KEY,
+            secret_key=settings.LANGFUSE_SECRET_KEY,
+            host=settings.LANGFUSE_BASE_URL,
+        )
+
         # Create ONE callback instance
         _langfuse_callback = CallbackHandler(
         )

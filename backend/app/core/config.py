@@ -38,7 +38,6 @@ class Settings(BaseSettings):
     TEMPERATURE_IDEATION: float = 0.7
     TEMPERATURE_COPYWRITER: float = 0.5
 
-
     # Langfuse (Observability)
     LANGFUSE_PUBLIC_KEY: Optional[str] = None
     LANGFUSE_SECRET_KEY: Optional[str] = None

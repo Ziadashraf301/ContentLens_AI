@@ -44,3 +44,9 @@ class AnalysisResponse(BaseModel):
 class ErrorResponse(BaseModel):
     detail: str
     code: int
+
+class ScoreRequest(BaseModel):
+    trace_id: str
+    agent_name: str
+    score: float
+    comment: Optional[str] = None

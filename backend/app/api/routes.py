@@ -2,12 +2,9 @@ import os
 import shutil
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from ..workflows.process_document import run_document_workflow
-from .schemas import AnalysisResponse
-from ..core.config import settings
+from .schemas import AnalysisResponse, ScoreRequest
 from ..core.logging import logger
 from ..core.langfuse import get_langfuse_tracer
-from pydantic import BaseModel
-from typing import Optional
 
 router = APIRouter()
 
@@ -53,12 +50,6 @@ async def process_document(
             os.remove(file_path)
 
 
-class ScoreRequest(BaseModel):
-    trace_id: str
-    agent_name: str
-    score: float
-    comment: Optional[str] = None
-
 @router.post("/score-agent")
 async def score_agent(request: ScoreRequest):
     """
@@ -69,15 +60,21 @@ async def score_agent(request: ScoreRequest):
         if not tracer.client:
             raise HTTPException(status_code=503, detail="Langfuse not configured")
 
-        # Find the trace and add score
-        # Note: In practice, you'd need to retrieve the trace object
-        # This is a simplified version - you'd need to store trace IDs
+        # Retrieve the trace by ID
+        trace = tracer.client.trace(id=request.trace_id)
+        if not trace:
+            raise HTTPException(status_code=404, detail="Trace not found")
 
-        # For now, we'll assume the trace_id is available
-        # In production, you'd query Langfuse API to get the trace
+        # Add the score to the trace
+        tracer.add_score(
+            trace,
+            name=f"{request.agent_name}_manual_score",
+            value=request.score,
+            comment=request.comment or "Manual user score"
+        )
 
-        logger.info(f"Scoring agent {request.agent_name} with {request.score}")
-        return {"status": "score recorded"}
+        logger.info(f"Scored agent {request.agent_name} with {request.score} for trace {request.trace_id}")
+        return {"status": "score recorded", "trace_id": request.trace_id}
 
     except Exception as e:
         logger.error(f"Scoring error: {e}")

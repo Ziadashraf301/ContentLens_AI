@@ -18,13 +18,8 @@ def init_langfuse():
             host=settings.LANGFUSE_BASE_URL,
         )
 
-        # Create ONE callback instance with enhanced config
+        # Create ONE callback instance
         _langfuse_callback = CallbackHandler(
-            public_key=settings.LANGFUSE_PUBLIC_KEY,
-            secret_key=settings.LANGFUSE_SECRET_KEY,
-            host=settings.LANGFUSE_BASE_URL,
-            # Enable debug mode for better tracing
-            debug=True,
         )
 
 

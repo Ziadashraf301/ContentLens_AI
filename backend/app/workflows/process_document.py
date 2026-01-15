@@ -18,7 +18,6 @@ async def run_document_workflow(file_path: str, user_request: str):
     )
 
     try:
-    try:
         # Load and Extract
         load_span = tracer.add_span(trace, "file_loading", input_data={"file_path": file_path})
         loader = FileLoader(file_path)
@@ -68,7 +67,7 @@ async def run_document_workflow(file_path: str, user_request: str):
         tracer.end_trace(trace)
         
         # Return trace ID for scoring
-        result["trace_id"] = trace.id if trace else None
+        final_state["trace_id"] = trace.id if trace else None
         return final_state
 
     except Exception as e:

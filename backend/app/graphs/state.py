@@ -1,3 +1,4 @@
+from typing import TypedDict, List, Optional, Dict, Any
 class AgentState(TypedDict):
     """
     This is the 'Memory' It tracks the document text and what each agent has produced.

@@ -61,7 +61,7 @@ async def score_agent(request: ScoreRequest):
             raise HTTPException(status_code=503, detail="Langfuse not configured")
 
         # Retrieve the trace by ID
-        trace = tracer.client.trace(id=request.trace_id)
+        trace = tracer.client.get_trace(id=request.trace_id)
         if not trace:
             raise HTTPException(status_code=404, detail="Trace not found")
 

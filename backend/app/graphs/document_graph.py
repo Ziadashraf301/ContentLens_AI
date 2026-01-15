@@ -126,12 +126,12 @@ def copywriter_node(state: AgentState):
     copy = agent.run(str(brief), user_request)
     
     # Validate output
-    if not OutputValidator.validate_agent_output('copy', copy):
+    if not OutputValidator.validate_agent_output('copywriter', copy):
         logger.warning("Copywriter output validation failed")
     
     current_index = state.get("current_step_index", 0)
     return {
-        "copy": copy,
+        "copywriting": copy,
         "current_step_index": current_index + 1
     }
 
@@ -139,8 +139,8 @@ def copywriter_node(state: AgentState):
 def compliance_node(state: AgentState):
     logger.info("--- NODE: COMPLIANCE ---")
     agent = ComplianceAgent()
-    # Check the copy first if present, else the summary or extraction
-    to_check = state.get("copy") or state.get("summary") or str(state.get("extraction", ""))
+    # Check the copywriting first if present, else the summary or extraction
+    to_check = state.get("copywriting") or state.get("summary") or str(state.get("extraction", ""))
     compliance_report = agent.run(to_check)
     
     # Validate output

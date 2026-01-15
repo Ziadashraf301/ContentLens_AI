@@ -28,7 +28,7 @@ class AnalysisResponse(BaseModel):
     ideation: Optional[str] = Field(
         None, description="Creative campaign ideas"
     )
-    copy: Optional[str] = Field(
+    copywriting: Optional[str] = Field(
         None, description="Copywriting output"
     )
     compliance: Optional[Dict[str, Any]] = Field(

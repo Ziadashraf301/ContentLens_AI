@@ -55,8 +55,8 @@ class OutputValidator:
         return len(re.findall(r'\d+\.\s*\*\*Title\*\*', output)) >= 3
 
     @staticmethod
-    def validate_copy(output: str) -> bool:
-        """Validate copy has variants."""
+    def validate_copywriter(output: str) -> bool:
+        """Validate copywriter has variants."""
         if not isinstance(output, str):
             return False
         # Check for variant format
@@ -86,7 +86,7 @@ class OutputValidator:
             'analysis': cls.validate_analysis,
             'recommendation': cls.validate_recommendation,
             'ideation': cls.validate_ideation,
-            'copy': cls.validate_copy,
+            'copywriter': cls.validate_copywriter,
             'translation': cls.validate_translation,
             'compliance': cls.validate_compliance,
         }

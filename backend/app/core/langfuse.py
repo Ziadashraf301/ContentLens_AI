@@ -29,9 +29,7 @@ def get_langfuse_callback():
 
 def get_langfuse_client():
     """Get the Langfuse client for manual operations."""
-    if _langfuse_callback:
-        return _langfuse_callback.langfuse
-    return None
+    return _langfuse_client
 
 
 class LangfuseTracer:

@@ -18,7 +18,9 @@ async def run_document_workflow(file_path: str, user_request: str):
         with tracer.client.start_as_current_observation(
             as_type="span",
             name="document_processing_workflow",
-            metadata={"file_path": file_path, "user_request": user_request}
+            # CRITICAL: Set input on the root observation - this becomes trace input
+            input={"file_path": file_path, "user_request": user_request},
+            metadata={"file_path": file_path}
         ) as trace:
 
             try:
@@ -35,6 +37,8 @@ async def run_document_workflow(file_path: str, user_request: str):
                 if not extracted_text:
                     logger.error(f"Workflow failed: No text extracted from {file_path}")
                     trace.score(name="workflow_success", value=0.0, comment="No text extracted", data_type="NUMERIC")
+                    # Set trace output even on error
+                    trace.update_trace(output={"error": "No text could be extracted from the file."})
                     return {"error": "No text could be extracted from the file."}
 
                 # Sanitize and Validate
@@ -47,7 +51,12 @@ async def run_document_workflow(file_path: str, user_request: str):
 
                     if not BriefValidator.is_valid_brief(clean_text):
                         logger.warning(f"Quality Check: File at {file_path} has low brief-keyword density.")
-                        validate_span.update(metadata={"quality_check": "low_density"})
+                        validate_span.update(
+                            output={"clean_text_length": len(clean_text)},
+                            metadata={"quality_check": "low_density"}
+                        )
+                    else:
+                        validate_span.update(output={"clean_text_length": len(clean_text)})
 
                 # Intelligence Gathering
                 with trace.start_as_current_observation(
@@ -82,6 +91,22 @@ async def run_document_workflow(file_path: str, user_request: str):
                     final_state = await app_graph.ainvoke(initial_state, config=config)
                     graph_span.update(output={"final_state_keys": list(final_state.keys())})
 
+                # CRITICAL: Set trace-level output explicitly
+                trace.update_trace(
+                    output={
+                        "extraction": str(final_state.get("extraction", ""))[:200],  # Truncate for UI
+                        "summary": str(final_state.get("summary", ""))[:200],
+                        "analysis": str(final_state.get("analysis", ""))[:200],
+                        "recommendation": str(final_state.get("recommendation", ""))[:200],
+                        "ideation": str(final_state.get("ideation", ""))[:200],
+                        "copywriting": str(final_state.get("copywriting", ""))[:200],
+                        "compliance": str(final_state.get("compliance", ""))[:100],
+                        "translation": str(final_state.get("translation", ""))[:200],
+                        "completed_steps": final_state.get("next_steps", []),
+                        "status": "success"
+                    }
+                )
+
                 trace.score(name="workflow_success", value=1.0, comment="Completed successfully", data_type="NUMERIC")
                 
                 # Get trace ID from the span
@@ -93,4 +118,6 @@ async def run_document_workflow(file_path: str, user_request: str):
             except Exception as e:
                 logger.error(f"Workflow Critical Error: {str(e)}")
                 trace.score(name="workflow_success", value=0.0, comment=f"Error: {str(e)}", data_type="NUMERIC")
+                # Set trace output on error
+                trace.update_trace(output={"error": str(e), "status": "failed"})
                 return {"error": str(e)}

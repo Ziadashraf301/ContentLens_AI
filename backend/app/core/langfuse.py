@@ -43,13 +43,16 @@ class LangfuseTracer:
 
     def start_trace(self, name: str, user_id: Optional[str] = None,
                    session_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None,
-                   tags: Optional[list] = None):
+                   tags: Optional[list] = None, input_data: Optional[Dict[str, Any]] = None,
+                   output_data: Optional[Dict[str, Any]] = None):
         """
         Start a new trace using context manager pattern.
         Returns a span object that can be used with 'with' statement.
         
-        NOTE: In Langfuse 3.x, tags must be set via propagate_attributes(),
-        not passed to start_as_current_observation()
+        NOTE: In Langfuse 3.x:
+        - Tags must be set via propagate_attributes()
+        - Input/output on root observation become trace input/output
+        - Use update_trace() to set trace-level input/output explicitly
         """
         if not self.client:
             return None
@@ -62,14 +65,18 @@ class LangfuseTracer:
             trace_attrs['session_id'] = session_id
         if metadata:
             trace_attrs['metadata'] = metadata
+        # CRITICAL: Set input on root observation - becomes trace input
+        if input_data:
+            trace_attrs['input'] = input_data
         # IMPORTANT: Do NOT include 'tags' in trace_attrs - it's not supported
 
         # Create a wrapper class to handle tags via propagate_attributes
         class TraceWrapper:
-            def __init__(self, client, name, tags, **attrs):
+            def __init__(self, client, name, tags, output_data, **attrs):
                 self.client = client
                 self.name = name
                 self.tags = tags
+                self.output_data = output_data
                 self.attrs = attrs
                 self.span = None
                 
@@ -89,12 +96,16 @@ class LangfuseTracer:
                 return self.span.__enter__()
             
             def __exit__(self, exc_type, exc_val, exc_tb):
+                # Set output if provided
+                if self.output_data and self.span:
+                    self.span.update(output=self.output_data)
+                
                 result = self.span.__exit__(exc_type, exc_val, exc_tb)
                 if self.tags:
                     self._prop_context.__exit__(exc_type, exc_val, exc_tb)
                 return result
 
-        return TraceWrapper(self.client, name, tags, **trace_attrs)
+        return TraceWrapper(self.client, name, tags, output_data, **trace_attrs)
 
     def log_generation(self, parent_span, name: str, model: str, prompt: str,
                       completion: str, metadata: Optional[Dict[str, Any]] = None):

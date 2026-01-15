@@ -13,9 +13,6 @@ def init_langfuse():
     if settings.LANGFUSE_PUBLIC_KEY and settings.LANGFUSE_SECRET_KEY:
         # Create ONE callback instance
         _langfuse_callback = CallbackHandler(
-            langfuse_public_key=settings.LANGFUSE_PUBLIC_KEY,
-            langfuse_secret_key=settings.LANGFUSE_SECRET_KEY,
-            langfuse_host=settings.LANGFUSE_BASE_URL,
         )
 
 

@@ -2,12 +2,14 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class TranslatorAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_TRANSLATOR
+            model=settings.OLLAMA_MODEL_TRANSLATOR,
+            temperature=settings.TEMPERATURE_TRANSLATOR
         )
         
         self.template = """
@@ -31,6 +33,7 @@ class TranslatorAgent:
             template=self.template
         )
 
+    @trace_agent_execution("translation", settings.OLLAMA_MODEL_TRANSLATOR)
     def run(self, content: str, source_lang: str | None = None):
         if source_lang == "ar":
             return f"Note: Content is already in Arabic. Original: {content}"

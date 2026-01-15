@@ -108,6 +108,40 @@ export const ResultCard: React.FC<Props> = ({ data }) => {
         </section>
       )}
 
+      {data.ideation && (
+        <section className="ideation-box">
+          <h3>💡 Campaign Ideas</h3>
+          <div className="ideation-list">{parseToFragments(data.ideation)}</div>
+        </section>
+      )}
+
+      {data.copy && (
+        <section className="copy-box">
+          <h3>📄 Copywriting</h3>
+          <div className="copy-content">{parseToFragments(data.copy)}</div>
+        </section>
+      )}
+
+      {data.compliance && (
+        <section className="compliance-box">
+          <h3>⚖️ Compliance Check</h3>
+          {typeof data.compliance === 'object' ? (
+            <div className="compliance-content">
+              <p><strong>Status:</strong> {data.compliance.status}</p>
+              {data.compliance.issues && data.compliance.issues.length > 0 && (
+                <ul>
+                  {data.compliance.issues.map((issue: string, i: number) => (
+                    <li key={i}>{issue}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : (
+            <div className="compliance-content">{parseToFragments(data.compliance)}</div>
+          )}
+        </section>
+      )}
+
       {/* Optional per-agent raw output for debugging */}
       {data.agents && (
         <section>

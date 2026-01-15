@@ -2,13 +2,14 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class IdeationAgent:
     def __init__(self):
-        # Use the summarizer model as a general creative model by default
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_IDEATION
+            model=settings.OLLAMA_MODEL_IDEATION,
+            temperature=settings.TEMPERATURE_IDEATION
         )
 
         self.template = """
@@ -61,6 +62,7 @@ class IdeationAgent:
             template=self.template
         )
 
+    @trace_agent_execution("ideation", settings.OLLAMA_MODEL_IDEATION)
     def run(self, content: str):
         try:
             logger.info("Agent: Ideation generating campaign ideas...")

@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class RouterAgent:
     def __init__(self):
@@ -33,6 +34,12 @@ class RouterAgent:
           * "Translate to Arabic and analyze" → translate,analyze
           * "Give me a full report" → summarize,analyze,recommend
           * "Translate this" → translate
+          * "Write email copy" → copywrite
+          * "Generate campaign ideas" → ideation
+          * "What are the recommendations?" → recommend
+          * "Check compliance" → compliance
+          * "Summarize and translate" → summarize,translate
+          * "Analyze and give ideas" → analyze,recommend,ideate
 
         USER REQUEST: {user_request}
 
@@ -44,6 +51,7 @@ class RouterAgent:
             template=self.template
         )
 
+    @trace_agent_execution("router", settings.OLLAMA_MODEL_ROUTER)
     def decide(self, user_request: str) -> list:
         """
         Returns a list of tasks to execute in order.

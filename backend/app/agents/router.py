@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class RouterAgent:
     def __init__(self):
@@ -50,6 +51,7 @@ class RouterAgent:
             template=self.template
         )
 
+    @trace_agent_execution("router", settings.OLLAMA_MODEL_ROUTER)
     def decide(self, user_request: str) -> list:
         """
         Returns a list of tasks to execute in order.

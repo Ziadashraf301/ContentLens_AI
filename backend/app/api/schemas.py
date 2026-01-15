@@ -39,6 +39,7 @@ class AnalysisResponse(BaseModel):
     next_steps: Optional[List[str]] = []
     current_step_index: Optional[int] = 0
     errors: List[str] = []
+    trace_id: Optional[str] = None
 
 class ErrorResponse(BaseModel):
     detail: str

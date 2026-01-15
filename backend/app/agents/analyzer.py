@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class AnalyzerAgent:
     def __init__(self):
@@ -45,6 +46,7 @@ class AnalyzerAgent:
             template=self.template
         )
 
+    @trace_agent_execution("analysis", settings.OLLAMA_MODEL_ANALYZER)
     def run(self, content: str):
         try:
             logger.info("Agent: Analyzer performing strategic review...")

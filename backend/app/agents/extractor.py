@@ -3,6 +3,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class ExtractorAgent:
     def __init__(self):
@@ -51,6 +52,7 @@ class ExtractorAgent:
             partial_variables={"format_instructions": self.parser.get_format_instructions()},
         )
 
+    @trace_agent_execution("extraction", settings.OLLAMA_MODEL_EXTRACTOR)
     def run(self, text: str):
         """
         The execution logic.

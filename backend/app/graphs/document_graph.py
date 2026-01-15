@@ -8,7 +8,9 @@ from ..agents.analyzer import AnalyzerAgent
 from ..agents.recommender import RecommenderAgent
 from ..agents.ideation import IdeationAgent
 from ..agents.copywriter import CopywriterAgent
+from ..agents.compliance import ComplianceAgent
 from ..utils.output_validator import OutputValidator
+from ..core.logging import logger
 
 # --- Node Functions ---
 
@@ -98,14 +100,6 @@ def recommendation_node(state: AgentState):
         "current_step_index": current_index + 1 
     }
     
-    # Increment step counter
-    current_index = state.get("current_step_index", 0)
-    return {
-        "recommendation": recommendations,
-        "current_step_index": current_index + 1 
-    }
-
-
 def ideation_node(state: AgentState):
     logger.info("--- NODE: IDEATION ---")
     agent = IdeationAgent()
@@ -135,12 +129,6 @@ def copywriter_node(state: AgentState):
     if not OutputValidator.validate_agent_output('copy', copy):
         logger.warning("Copywriter output validation failed")
     
-    current_index = state.get("current_step_index", 0)
-    return {
-        "copy": copy,
-        "current_step_index": current_index + 1
-    }
-
     current_index = state.get("current_step_index", 0)
     return {
         "copy": copy,

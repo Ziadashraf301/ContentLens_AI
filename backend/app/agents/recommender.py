@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 
 class RecommenderAgent:
@@ -51,6 +52,7 @@ class RecommenderAgent:
 
         self.prompt = PromptTemplate(input_variables=["content", "user_request"], template=self.template)
 
+    @trace_agent_execution("recommendation", settings.OLLAMA_MODEL_RECOMMENDER)
     def run(self, content: str, user_request: str):
         try:
             logger.info("Agent: Recommender generating recommendations...")

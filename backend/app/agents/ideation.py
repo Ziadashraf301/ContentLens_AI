@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class IdeationAgent:
     def __init__(self):
@@ -61,6 +62,7 @@ class IdeationAgent:
             template=self.template
         )
 
+    @trace_agent_execution("ideation", settings.OLLAMA_MODEL_IDEATION)
     def run(self, content: str):
         try:
             logger.info("Agent: Ideation generating campaign ideas...")

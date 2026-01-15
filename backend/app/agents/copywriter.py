@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class CopywriterAgent:
     def __init__(self):
@@ -59,6 +60,7 @@ class CopywriterAgent:
             template=self.template
         )
 
+    @trace_agent_execution("copy", settings.OLLAMA_MODEL_COPYWRITER)
     def run(self, brief: str, user_request: str):
         try:
             logger.info("Agent: Copywriter creating variants...")

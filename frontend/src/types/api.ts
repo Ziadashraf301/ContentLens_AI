@@ -11,4 +11,5 @@ export interface AnalysisResponse {
   current_step_index?: number;
   // Optional per-agent outputs (keyed by agent name)
   agents?: Record<string, any>;
+  trace_id?: string;
 }

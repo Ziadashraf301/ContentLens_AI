@@ -1,4 +1,4 @@
-from langfuse import Langfuse, get_client
+from langfuse import Langfuse, get_client, propagate_attributes
 from langfuse.langchain import CallbackHandler
 from app.core.config import settings
 import time
@@ -47,11 +47,14 @@ class LangfuseTracer:
         """
         Start a new trace using context manager pattern.
         Returns a span object that can be used with 'with' statement.
+        
+        NOTE: In Langfuse 3.x, tags must be set via propagate_attributes(),
+        not passed to start_as_current_observation()
         """
         if not self.client:
             return None
 
-        # Build trace context attributes
+        # Build trace context attributes (NO TAGS HERE)
         trace_attrs = {}
         if user_id:
             trace_attrs['user_id'] = user_id
@@ -59,15 +62,39 @@ class LangfuseTracer:
             trace_attrs['session_id'] = session_id
         if metadata:
             trace_attrs['metadata'] = metadata
-        if tags:
-            trace_attrs['tags'] = tags
+        # IMPORTANT: Do NOT include 'tags' in trace_attrs - it's not supported
 
-        # In Langfuse 3.x, use start_as_current_observation with context manager
-        return self.client.start_as_current_observation(
-            as_type="span",
-            name=name,
-            **trace_attrs
-        )
+        # Create a wrapper class to handle tags via propagate_attributes
+        class TraceWrapper:
+            def __init__(self, client, name, tags, **attrs):
+                self.client = client
+                self.name = name
+                self.tags = tags
+                self.attrs = attrs
+                self.span = None
+                
+            def __enter__(self):
+                # If we have tags, use propagate_attributes
+                if self.tags:
+                    # Start with propagate_attributes for tags
+                    self._prop_context = propagate_attributes(tags=self.tags)
+                    self._prop_context.__enter__()
+                
+                # Now start the observation
+                self.span = self.client.start_as_current_observation(
+                    as_type="span",
+                    name=self.name,
+                    **self.attrs
+                )
+                return self.span.__enter__()
+            
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                result = self.span.__exit__(exc_type, exc_val, exc_tb)
+                if self.tags:
+                    self._prop_context.__exit__(exc_type, exc_val, exc_tb)
+                return result
+
+        return TraceWrapper(self.client, name, tags, **trace_attrs)
 
     def log_generation(self, parent_span, name: str, model: str, prompt: str,
                       completion: str, metadata: Optional[Dict[str, Any]] = None):
@@ -174,65 +201,66 @@ def trace_agent_execution(agent_name: str, model_name: str):
             if not tracer.client:
                 return func(self, *args, **kwargs)
 
-            # Start trace as a span
-            with tracer.client.start_as_current_observation(
-                as_type="span",
-                name=f"agent_{agent_name}",
-                metadata={"agent": agent_name, "model": model_name},
-            ) as trace_span:
-                
-                # Add execution span
-                with trace_span.start_as_current_observation(
+            # Use propagate_attributes for tags, then start observation
+            with propagate_attributes(tags=[agent_name, "agent"]):
+                with tracer.client.start_as_current_observation(
                     as_type="span",
-                    name=f"{agent_name}_execution",
-                    input={"args": str(args), "kwargs": str(kwargs)},
-                    metadata={"start_time": time.time()}
-                ) as exec_span:
+                    name=f"agent_{agent_name}",
+                    metadata={"agent": agent_name, "model": model_name}
+                ) as trace_span:
+                    
+                    # Add execution span
+                    with trace_span.start_as_current_observation(
+                        as_type="span",
+                        name=f"{agent_name}_execution",
+                        input={"args": str(args), "kwargs": str(kwargs)},
+                        metadata={"start_time": time.time()}
+                    ) as exec_span:
 
-                    try:
-                        # Execute the agent
-                        result = func(self, *args, **kwargs)
+                        try:
+                            # Execute the agent
+                            result = func(self, *args, **kwargs)
 
-                        # Log the generation
-                        prompt = getattr(self, 'template', 'No template available')
-                        if hasattr(self, 'prompt') and hasattr(self.prompt, 'template'):
-                            prompt = self.prompt.template
+                            # Log the generation
+                            prompt = getattr(self, 'template', 'No template available')
+                            if hasattr(self, 'prompt') and hasattr(self.prompt, 'template'):
+                                prompt = self.prompt.template
 
-                        with trace_span.start_as_current_observation(
-                            as_type="generation",
-                            name=f"{agent_name}_llm_call",
-                            model=model_name,
-                            input=prompt,
-                            output=str(result),
-                            metadata={"agent": agent_name}
-                        ):
-                            pass  # Generation is automatically recorded
+                            with trace_span.start_as_current_observation(
+                                as_type="generation",
+                                name=f"{agent_name}_llm_call",
+                                model=model_name,
+                                input=prompt,
+                                output=str(result),
+                                metadata={"agent": agent_name}
+                            ):
+                                pass  # Generation is automatically recorded
 
-                        # Validate and score
-                        from app.utils.output_validator import OutputValidator
-                        is_valid = OutputValidator.validate_agent_output(agent_name, result)
-                        
-                        trace_span.score(
-                            name=f"{agent_name}_validation",
-                            value=1.0 if is_valid else 0.0,
-                            comment="Output format validation",
-                            data_type="NUMERIC"
-                        )
+                            # Validate and score
+                            from app.utils.output_validator import OutputValidator
+                            is_valid = OutputValidator.validate_agent_output(agent_name, result)
+                            
+                            trace_span.score(
+                                name=f"{agent_name}_validation",
+                                value=1.0 if is_valid else 0.0,
+                                comment="Output format validation",
+                                data_type="NUMERIC"
+                            )
 
-                        # Update execution span with success
-                        exec_span.update(
-                            output={"result": str(result)[:500]},
-                            metadata={"end_time": time.time(), "success": True}
-                        )
+                            # Update execution span with success
+                            exec_span.update(
+                                output={"result": str(result)[:500]},
+                                metadata={"end_time": time.time(), "success": True}
+                            )
 
-                        return result
+                            return result
 
-                    except Exception as e:
-                        # Update execution span with error
-                        exec_span.update(
-                            metadata={"error": str(e), "success": False, "end_time": time.time()}
-                        )
-                        raise
+                        except Exception as e:
+                            # Update execution span with error
+                            exec_span.update(
+                                metadata={"error": str(e), "success": False, "end_time": time.time()}
+                            )
+                            raise
 
         return wrapper
     return decorator

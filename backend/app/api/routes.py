@@ -4,7 +4,7 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from ..workflows.process_document import run_document_workflow
 from .schemas import AnalysisResponse, ScoreRequest
 from ..core.logging import logger
-from ..core.langfuse import get_langfuse_tracer
+from ..core.langfuse import get_langfuse_client
 
 router = APIRouter()
 
@@ -56,21 +56,22 @@ async def score_agent(request: ScoreRequest):
     Manually score an agent execution for evaluation.
     """
     try:
-        tracer = get_langfuse_tracer()
-        if not tracer.client:
+        client = get_langfuse_client()
+        if not client:
             raise HTTPException(status_code=503, detail="Langfuse not configured")
 
-        # Retrieve the trace by ID
-        trace = tracer.client.get_trace(id=request.trace_id)
+        # In Langfuse 3.x, use the api.trace.get() method
+        trace = client.api.trace.get(request.trace_id)
         if not trace:
             raise HTTPException(status_code=404, detail="Trace not found")
 
-        # Add the score to the trace
-        tracer.add_score(
-            trace,
+        # Add the score using create_score
+        client.create_score(
+            trace_id=request.trace_id,
             name=f"{request.agent_name}_manual_score",
             value=request.score,
-            comment=request.comment or "Manual user score"
+            comment=request.comment or "Manual user score",
+            data_type="NUMERIC"
         )
 
         logger.info(f"Scored agent {request.agent_name} with {request.score} for trace {request.trace_id}")

@@ -11,67 +11,84 @@ async def run_document_workflow(file_path: str, user_request: str):
     Orchestrates the pre-processing and execution of the AI Graph.
     """
     tracer = get_langfuse_tracer()
-    trace = tracer.start_trace(
+    
+    # Start trace using context manager
+    with tracer.start_trace(
         name="document_processing_workflow",
         metadata={"file_path": file_path, "user_request": user_request},
         tags=["workflow", "document_processing", "production"]
-    )
+    ) as trace:
 
-    try:
-        # Load and Extract
-        load_span = tracer.add_span(trace, "file_loading", input_data={"file_path": file_path})
-        loader = FileLoader(file_path)
-        extracted_text = loader.load()
-        load_span.output_data = {"text_length": len(extracted_text) if extracted_text else 0}
-        
-        if not extracted_text:
-            logger.error(f"Workflow failed: No text extracted from {file_path}")
-            tracer.add_score(trace, "workflow_success", 0.0, "No text extracted")
-            tracer.end_trace(trace)
-            return {"error": "No text could be extracted from the file."}
+        try:
+            # Load and Extract
+            with trace.start_as_current_observation(
+                as_type="span",
+                name="file_loading",
+                input={"file_path": file_path}
+            ) as load_span:
+                loader = FileLoader(file_path)
+                extracted_text = loader.load()
+                load_span.update(output={"text_length": len(extracted_text) if extracted_text else 0})
+            
+            if not extracted_text:
+                logger.error(f"Workflow failed: No text extracted from {file_path}")
+                trace.score(name="workflow_success", value=0.0, comment="No text extracted", data_type="NUMERIC")
+                return {"error": "No text could be extracted from the file."}
 
-        # Sanitize and Validate
-        validate_span = tracer.add_span(trace, "validation", input_data={"text_length": len(extracted_text)})
-        clean_text = BriefValidator.sanitize_text(extracted_text)
+            # Sanitize and Validate
+            with trace.start_as_current_observation(
+                as_type="span",
+                name="validation",
+                input={"text_length": len(extracted_text)}
+            ) as validate_span:
+                clean_text = BriefValidator.sanitize_text(extracted_text)
 
-        if not BriefValidator.is_valid_brief(clean_text):
-            logger.warning(f"Quality Check: File at {file_path} has low brief-keyword density.")
-            validate_span.metadata = {"quality_check": "low_density"}
+                if not BriefValidator.is_valid_brief(clean_text):
+                    logger.warning(f"Quality Check: File at {file_path} has low brief-keyword density.")
+                    validate_span.update(metadata={"quality_check": "low_density"})
 
-        # Intelligence Gathering
-        lang_span = tracer.add_span(trace, "language_detection", input_data={"text_sample": clean_text[:100]})
-        source_lang = detect_language(clean_text)
-        lang_span.output_data = {"detected_lang": source_lang}
+            # Intelligence Gathering
+            with trace.start_as_current_observation(
+                as_type="span",
+                name="language_detection",
+                input={"text_sample": clean_text[:100]}
+            ) as lang_span:
+                source_lang = detect_language(clean_text)
+                lang_span.update(output={"detected_lang": source_lang})
 
-        # Prepare the Initial State for LangGraph
-        initial_state = {
-            "raw_text": clean_text,
-            "user_request": user_request,
-            "source_lang": source_lang,
-            "errors": []
-        }
+            # Prepare the Initial State for LangGraph
+            initial_state = {
+                "raw_text": clean_text,
+                "user_request": user_request,
+                "source_lang": source_lang,
+                "errors": []
+            }
 
-        # Execute the Brain (LangGraph)
-        logger.info("Workflow: Handing off to LangGraph...")
-        langfuse_handler = get_langfuse_callback()
+            # Execute the Brain (LangGraph)
+            logger.info("Workflow: Handing off to LangGraph...")
+            langfuse_handler = get_langfuse_callback()
 
-        config = {}
-        if langfuse_handler:
-            config["callbacks"] = [langfuse_handler]
+            config = {}
+            if langfuse_handler:
+                config["callbacks"] = [langfuse_handler]
 
-        graph_span = tracer.add_span(trace, "graph_execution", input_data={"initial_state_keys": list(initial_state.keys())})
-        final_state = await app_graph.ainvoke(initial_state, config=config)
-        graph_span.output_data = {"final_state_keys": list(final_state.keys())}
+            with trace.start_as_current_observation(
+                as_type="span",
+                name="graph_execution",
+                input={"initial_state_keys": list(initial_state.keys())}
+            ) as graph_span:
+                final_state = await app_graph.ainvoke(initial_state, config=config)
+                graph_span.update(output={"final_state_keys": list(final_state.keys())})
 
-        tracer.add_score(trace, "workflow_success", 1.0, "Completed successfully")
-        tracer.end_trace(trace)
-        
-        # Return trace ID for scoring
-        final_state["trace_id"] = trace.id if trace else None
-        return final_state
+            trace.score(name="workflow_success", value=1.0, comment="Completed successfully", data_type="NUMERIC")
+            
+            # Get trace ID from the span
+            trace_id = trace.trace_id if hasattr(trace, 'trace_id') else None
+            final_state["trace_id"] = trace_id
+            
+            return final_state
 
-    except Exception as e:
-        logger.error(f"Workflow Critical Error: {str(e)}")
-        tracer.add_score(trace, "workflow_success", 0.0, f"Error: {str(e)}")
-        tracer.end_trace(trace)
-        return {"error": str(e)}
+        except Exception as e:
+            logger.error(f"Workflow Critical Error: {str(e)}")
+            trace.score(name="workflow_success", value=0.0, comment=f"Error: {str(e)}", data_type="NUMERIC")
+            return {"error": str(e)}

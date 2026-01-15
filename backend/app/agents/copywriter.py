@@ -60,12 +60,14 @@ class CopywriterAgent:
             template=self.template
         )
 
-    @trace_agent_execution("copy", settings.OLLAMA_MODEL_COPYWRITER)
+    
+    @trace_agent_execution("copywriter", settings.OLLAMA_MODEL_COPYWRITER)
     def run(self, brief: str, user_request: str):
         try:
             logger.info("Agent: Copywriter creating variants...")
             chain = self.prompt | self.llm
-            return chain.invoke({"brief": brief, "user_request": user_request})
+            result = chain.invoke({"brief": brief, "user_request": user_request})
+            return result
         except Exception as e:
             logger.error(f"Copywriter Error: {e}")
             return "Copy generation failed."

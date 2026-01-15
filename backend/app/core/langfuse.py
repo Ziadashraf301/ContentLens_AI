@@ -1,4 +1,4 @@
-from langfuse import get_client
+from langfuse import Langfuse, get_client
 from langfuse.langchain import CallbackHandler
 from app.core.config import settings
 import time
@@ -12,12 +12,17 @@ def init_langfuse():
     global _langfuse_callback
 
     if settings.LANGFUSE_PUBLIC_KEY and settings.LANGFUSE_SECRET_KEY:
-        # Create callback handler for LangChain integration
-        _langfuse_callback = CallbackHandler(
+        # CRITICAL: In Langfuse 3.x, you MUST initialize the client first
+        # This creates a singleton that CallbackHandler() will use
+        Langfuse(
             public_key=settings.LANGFUSE_PUBLIC_KEY,
             secret_key=settings.LANGFUSE_SECRET_KEY,
             host=settings.LANGFUSE_BASE_URL,
         )
+        
+        # CRITICAL: CallbackHandler() takes NO arguments in Langfuse 3.x
+        # It automatically uses get_client() internally
+        _langfuse_callback = CallbackHandler()
 
 
 def get_langfuse_callback():

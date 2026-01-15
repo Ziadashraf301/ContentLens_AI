@@ -7,7 +7,8 @@ class CopywriterAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_COPYWRITER
+            model=settings.OLLAMA_MODEL_COPYWRITER,
+            temperature=settings.TEMPERATURE_COPYWRITER
         )
 
         self.template = """
@@ -15,7 +16,7 @@ class CopywriterAgent:
         You are a senior performance-focused marketing copywriter with experience in email and digital campaign optimization.
 
         TASK:
-        Based on the provided content brief, generate multiple copy variants suitable for A/B testing.
+        Based on the provided content brief and user request, generate multiple copy variants suitable for A/B testing.
 
         OUTPUT RULES:
         - Provide exactly 3 copy variants.
@@ -47,19 +48,22 @@ class CopywriterAgent:
         BRIEF:
         {brief}
 
+        USER REQUEST:
+        {user_request}
+
         COPY VARIANTS:
         """
 
         self.prompt = PromptTemplate(
-            input_variables=["brief"],
+            input_variables=["brief", "user_request"],
             template=self.template
         )
 
-    def run(self, brief: str):
+    def run(self, brief: str, user_request: str):
         try:
             logger.info("Agent: Copywriter creating variants...")
             chain = self.prompt | self.llm
-            return chain.invoke({"brief": brief})
+            return chain.invoke({"brief": brief, "user_request": user_request})
         except Exception as e:
             logger.error(f"Copywriter Error: {e}")
             return "Copy generation failed."

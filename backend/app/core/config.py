@@ -28,6 +28,16 @@ class Settings(BaseSettings):
     OLLAMA_MODEL_IDEATION: str = "llama3.1"
     OLLAMA_MODEL_COPYWRITER: str = "llama3.1"
 
+    # Model Temperatures
+    TEMPERATURE_EXTRACTOR: float = 0.0
+    TEMPERATURE_ROUTER: float = 0.0
+    TEMPERATURE_SUMMARIZER: float = 0.3
+    TEMPERATURE_TRANSLATOR: float = 0.0
+    TEMPERATURE_ANALYZER: float = 0.2
+    TEMPERATURE_RECOMMENDER: float = 0.3
+    TEMPERATURE_IDEATION: float = 0.7
+    TEMPERATURE_COPYWRITER: float = 0.5
+
 
     # Langfuse (Observability)
     LANGFUSE_PUBLIC_KEY: Optional[str] = None

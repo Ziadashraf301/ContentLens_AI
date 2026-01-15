@@ -7,7 +7,8 @@ class TranslatorAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_TRANSLATOR
+            model=settings.OLLAMA_MODEL_TRANSLATOR,
+            temperature=settings.TEMPERATURE_TRANSLATOR
         )
         
         self.template = """

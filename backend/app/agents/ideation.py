@@ -5,10 +5,10 @@ from ..core.logging import logger
 
 class IdeationAgent:
     def __init__(self):
-        # Use the summarizer model as a general creative model by default
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_IDEATION
+            model=settings.OLLAMA_MODEL_IDEATION,
+            temperature=settings.TEMPERATURE_IDEATION
         )
 
         self.template = """

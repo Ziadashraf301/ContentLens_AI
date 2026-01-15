@@ -33,6 +33,12 @@ class RouterAgent:
           * "Translate to Arabic and analyze" → translate,analyze
           * "Give me a full report" → summarize,analyze,recommend
           * "Translate this" → translate
+          * "Write email copy" → copywrite
+          * "Generate campaign ideas" → ideation
+          * "What are the recommendations?" → recommend
+          * "Check compliance" → compliance
+          * "Summarize and translate" → summarize,translate
+          * "Analyze and give ideas" → analyze,recommend,ideate
 
         USER REQUEST: {user_request}
 

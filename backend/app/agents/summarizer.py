@@ -7,7 +7,8 @@ class SummarizerAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_SUMMARIZER
+            model=settings.OLLAMA_MODEL_SUMMARIZER,
+            temperature=settings.TEMPERATURE_SUMMARIZER
         )
         
         self.template = """

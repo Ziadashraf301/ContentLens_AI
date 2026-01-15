@@ -9,7 +9,7 @@ class ExtractorAgent:
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_EXTRACTOR,
-            temperature=0 
+            temperature=settings.TEMPERATURE_EXTRACTOR 
         )
         
         # Define the Expected Output Structure
@@ -24,10 +24,19 @@ class ExtractorAgent:
         GOAL:
         Parse the text and identify the core message and actionable data points.
         
+        EXTRACT THESE FIELDS WHERE PRESENT:
+        - CampaignName: The name of the campaign
+        - Brand: The brand name
+        - TargetAudience: Description of the target audience
+        - CoreMessage: The main message or tagline
+        - ActionableDataPoints: Object with LaunchDate, PrimaryChannel, Budget, Goal, CreativeRequirements
+        - CallToAction: The CTA text
+        - AdvertiserContact: Object with name, email, phone
+        
         CONSTRAINTS:
         - Output MUST be strictly valid JSON.
         - Do not include any conversational filler or "Here is the JSON".
-        - If a field is missing in the text, return null for that field.
+        - If a field is missing in the text, set it to null.
         - Use the specific language found in the text.
 
         {format_instructions}

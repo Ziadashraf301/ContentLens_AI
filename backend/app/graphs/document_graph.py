@@ -8,8 +8,7 @@ from ..agents.analyzer import AnalyzerAgent
 from ..agents.recommender import RecommenderAgent
 from ..agents.ideation import IdeationAgent
 from ..agents.copywriter import CopywriterAgent
-from ..agents.compliance import ComplianceAgent
-from ..core.logging import logger
+from ..utils.output_validator import OutputValidator
 
 # --- Node Functions ---
 
@@ -18,6 +17,11 @@ def extraction_node(state: AgentState):
     agent = ExtractorAgent()
     # The raw_text comes from the FileLoader in the workflow
     result = agent.run(state["raw_text"])
+    
+    # Validate output
+    if not OutputValidator.validate_agent_output('extraction', result):
+        logger.warning("Extraction output validation failed")
+    
     return {"extraction": result}
 
 def router_node(state: AgentState):
@@ -32,6 +36,10 @@ def summarization_node(state: AgentState):
     agent = SummarizerAgent()
     summary = agent.run(state["extraction"])
     
+    # Validate output
+    if not OutputValidator.validate_agent_output('summary', summary):
+        logger.warning("Summary output validation failed")
+    
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
@@ -45,6 +53,10 @@ def translation_node(state: AgentState):
     text_to_translate = state["summary"] if state.get("summary") else str(state["extraction"])
     translation = agent.run(text_to_translate, state.get("source_lang"))
     
+    # Validate output
+    if not OutputValidator.validate_agent_output('translation', translation):
+        logger.warning("Translation output validation failed")
+    
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
@@ -57,6 +69,10 @@ def analysis_node(state: AgentState):
     agent = AnalyzerAgent()
     analysis_result = agent.run(state["extraction"])
     
+    # Validate output
+    if not OutputValidator.validate_agent_output('analysis', analysis_result):
+        logger.warning("Analysis output validation failed")
+    
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
@@ -67,8 +83,20 @@ def analysis_node(state: AgentState):
 def recommendation_node(state: AgentState):
     logger.info("--- NODE: RECOMMENDATION ---")
     agent = RecommenderAgent()
-    input_content = state.get("extraction") or state.get("analysis") or ""
-    recommendations = agent.run(input_content)
+    input_content = state.get("raw_text") or state.get("extraction") or state.get("analysis") or ""
+    user_request = state.get("user_request", "")
+    recommendations = agent.run(input_content, user_request)
+    
+    # Validate output
+    if not OutputValidator.validate_agent_output('recommendation', recommendations):
+        logger.warning("Recommendation output validation failed")
+    
+    # Increment step counter
+    current_index = state.get("current_step_index", 0)
+    return {
+        "recommendation": recommendations,
+        "current_step_index": current_index + 1 
+    }
     
     # Increment step counter
     current_index = state.get("current_step_index", 0)
@@ -83,6 +111,10 @@ def ideation_node(state: AgentState):
     agent = IdeationAgent()
     input_content = state.get("extraction") or state.get("raw_text") or ""
     ideas = agent.run(input_content)
+    
+    # Validate output
+    if not OutputValidator.validate_agent_output('ideation', ideas):
+        logger.warning("Ideation output validation failed")
 
     current_index = state.get("current_step_index", 0)
     return {
@@ -94,9 +126,20 @@ def ideation_node(state: AgentState):
 def copywriter_node(state: AgentState):
     logger.info("--- NODE: COPYWRITER ---")
     agent = CopywriterAgent()
-    # Prefer an explicit brief, else use the summary or extraction
-    brief = state.get("user_request") or state.get("summary") or str(state.get("extraction", ""))
-    copy = agent.run(brief)
+    # Use the raw text as the brief for copywriting
+    brief = state.get("raw_text") or str(state.get("extraction", ""))
+    user_request = state.get("user_request", "")
+    copy = agent.run(str(brief), user_request)
+    
+    # Validate output
+    if not OutputValidator.validate_agent_output('copy', copy):
+        logger.warning("Copywriter output validation failed")
+    
+    current_index = state.get("current_step_index", 0)
+    return {
+        "copy": copy,
+        "current_step_index": current_index + 1
+    }
 
     current_index = state.get("current_step_index", 0)
     return {
@@ -111,6 +154,10 @@ def compliance_node(state: AgentState):
     # Check the copy first if present, else the summary or extraction
     to_check = state.get("copy") or state.get("summary") or str(state.get("extraction", ""))
     compliance_report = agent.run(to_check)
+    
+    # Validate output
+    if not OutputValidator.validate_agent_output('compliance', compliance_report):
+        logger.warning("Compliance output validation failed")
 
     current_index = state.get("current_step_index", 0)
     return {

@@ -62,7 +62,7 @@ async def run_document_workflow(file_path: str, user_request: str):
                 with trace.start_as_current_observation(
                     as_type="span",
                     name="language_detection",
-                    input={"text_sample": clean_text[:100]}
+                    input={"text_sample": clean_text}
                 ) as lang_span:
                     source_lang = detect_language(clean_text)
                     lang_span.update(output={"detected_lang": source_lang})
@@ -94,14 +94,14 @@ async def run_document_workflow(file_path: str, user_request: str):
                 # CRITICAL: Set trace-level output explicitly
                 trace.update_trace(
                     output={
-                        "extraction": str(final_state.get("extraction", ""))[:200],  # Truncate for UI
-                        "summary": str(final_state.get("summary", ""))[:200],
-                        "analysis": str(final_state.get("analysis", ""))[:200],
-                        "recommendation": str(final_state.get("recommendation", ""))[:200],
-                        "ideation": str(final_state.get("ideation", ""))[:200],
-                        "copywriting": str(final_state.get("copywriting", ""))[:200],
-                        "compliance": str(final_state.get("compliance", ""))[:100],
-                        "translation": str(final_state.get("translation", ""))[:200],
+                        "extraction": str(final_state.get("extraction", "")),  # Truncate for UI
+                        "summary": str(final_state.get("summary", "")),
+                        "analysis": str(final_state.get("analysis", "")),
+                        "recommendation": str(final_state.get("recommendation", "")),
+                        "ideation": str(final_state.get("ideation", "")),
+                        "copywriting": str(final_state.get("copywriting", "")),
+                        "compliance": str(final_state.get("compliance", "")),
+                        "translation": str(final_state.get("translation", "")),
                         "completed_steps": final_state.get("next_steps", []),
                         "status": "success"
                     }

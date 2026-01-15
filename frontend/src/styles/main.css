@@ -208,6 +208,33 @@ main {
   margin-bottom: 0.5rem;
 }
 
+.ideation-list ul {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.ideation-list li {
+  margin-bottom: 0.5rem;
+}
+
+.copy-content ul {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.copy-content li {
+  margin-bottom: 0.5rem;
+}
+
+.compliance-content ul {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.compliance-content li {
+  margin-bottom: 0.5rem;
+}
+
 .arabic-text {
   direction: rtl;
   text-align: right;

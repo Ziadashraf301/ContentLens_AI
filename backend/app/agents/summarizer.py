@@ -2,12 +2,14 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 class SummarizerAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
-            model=settings.OLLAMA_MODEL_SUMMARIZER
+            model=settings.OLLAMA_MODEL_SUMMARIZER,
+            temperature=settings.TEMPERATURE_SUMMARIZER
         )
         
         self.template = """
@@ -44,6 +46,7 @@ class SummarizerAgent:
             template=self.template
         )
 
+    @trace_agent_execution("summary", settings.OLLAMA_MODEL_SUMMARIZER)
     def run(self, extraction_data: dict):
         try:
             logger.info("Agent: Summarizer condensing data...")

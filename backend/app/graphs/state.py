@@ -1,5 +1,3 @@
-from typing import TypedDict, List, Optional
-
 class AgentState(TypedDict):
     """
     This is the 'Memory' It tracks the document text and what each agent has produced.
@@ -14,8 +12,7 @@ class AgentState(TypedDict):
     recommendation: Optional[str]
     ideation: Optional[str]
     copy: Optional[str]
-    compliance: Optional[str]
+    compliance: Optional[Dict[str, Any]]
     next_steps: Optional[List[str]]
     current_step_index: Optional[int]
-    source_lang: Optional[str]
     errors: List[str]

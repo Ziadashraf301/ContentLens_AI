@@ -2,6 +2,7 @@ from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
 from ..core.config import settings
 from ..core.logging import logger
+from ..core.langfuse import trace_agent_execution
 
 
 class RecommenderAgent:
@@ -9,7 +10,7 @@ class RecommenderAgent:
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_RECOMMENDER,
-            temperature=0.3,
+            temperature=settings.TEMPERATURE_RECOMMENDER,
         )
 
         self.template = """
@@ -17,7 +18,7 @@ class RecommenderAgent:
         You are a Senior Media & Growth Strategist advising creative and marketing teams.
 
         TASK:
-        Based on the provided brief or extracted information, generate clear, high-impact recommendations that can be executed immediately.
+        Based on the provided brief or extracted information and user request, generate clear, high-impact recommendations that can be executed immediately.
 
         OUTPUT RULES:
         - Provide exactly 3 recommendations, ordered by priority (1 = highest impact).
@@ -43,16 +44,20 @@ class RecommenderAgent:
         INPUT_CONTENT:
         {content}
 
+        USER REQUEST:
+        {user_request}
+
         RECOMMENDATIONS:
         """
 
-        self.prompt = PromptTemplate(input_variables=["content"], template=self.template)
+        self.prompt = PromptTemplate(input_variables=["content", "user_request"], template=self.template)
 
-    def run(self, content: str):
+    @trace_agent_execution("recommendation", settings.OLLAMA_MODEL_RECOMMENDER)
+    def run(self, content: str, user_request: str):
         try:
             logger.info("Agent: Recommender generating recommendations...")
             chain = self.prompt | self.llm
-            return chain.invoke({"content": str(content)})
+            return chain.invoke({"content": str(content), "user_request": user_request})
         except Exception as e:
             logger.error(f"Recommender Error: {e}")
             return "Recommendation generation failed."

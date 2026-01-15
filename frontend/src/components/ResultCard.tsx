@@ -115,10 +115,10 @@ export const ResultCard: React.FC<Props> = ({ data }) => {
         </section>
       )}
 
-      {data.copy && (
+      {data.copywriting && (
         <section className="copy-box">
           <h3>📄 Copywriting</h3>
-          <div className="copy-content">{parseToFragments(data.copy)}</div>
+          <div className="copy-content">{parseToFragments(data.copywriting)}</div>
         </section>
       )}
 

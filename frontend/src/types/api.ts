@@ -5,7 +5,7 @@ export interface AnalysisResponse {
   analysis?: string;
   recommendation?: string;
   ideation?: string;
-  copy?: string;
+  copywriting?: string;
   compliance?: any;
   next_steps?: string[];
   current_step_index?: number;

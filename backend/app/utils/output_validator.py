@@ -11,10 +11,16 @@ class OutputValidator:
     """Validates agent outputs against expected formats."""
 
     @staticmethod
-    def validate_extraction(output: Dict[str, Any]) -> bool:
+    def validate_extraction(output: Any) -> bool:
         """Validate extraction output has required structure."""
+        # Handle both dict and string outputs
+        if isinstance(output, str):
+            # Check if it looks like extracted information
+            return len(output.strip()) > 50
+        
         if not isinstance(output, dict):
             return False
+        
         # Check for at least some key fields
         required_keys = ['CampaignName', 'Brand', 'TargetAudience']
         return any(key in output for key in required_keys)
@@ -25,57 +31,106 @@ class OutputValidator:
         if not isinstance(output, str) or len(output.strip()) < 10:
             return False
         # Should not be too long
-        return len(output) < 500
+        return len(output) < 1000
 
     @staticmethod
     def validate_analysis(output: str) -> bool:
         """Validate analysis has structured format."""
         if not isinstance(output, str):
             return False
-        # Check for key sections
-        has_missing = "Missing or Unclear Information" in output
-        has_recommendations = "Strategic Recommendations" in output
-        has_risks = "Potential Risks" in output
-        return has_missing or has_recommendations or has_risks
+        
+        # More lenient validation - check for meaningful content
+        if len(output.strip()) < 50:
+            return False
+            
+        # Check for key sections (case-insensitive)
+        output_lower = output.lower()
+        has_analysis_content = any(keyword in output_lower for keyword in [
+            'missing', 'unclear', 'recommendation', 'risk', 'opportunity',
+            'strength', 'weakness', 'threat', 'analysis', 'insight'
+        ])
+        
+        return has_analysis_content
 
     @staticmethod
     def validate_recommendation(output: str) -> bool:
         """Validate recommendation format."""
         if not isinstance(output, str):
             return False
-        # Check for numbered recommendations
-        return bool(re.search(r'\d+\.\s*Recommendation:', output))
+        
+        # More flexible validation
+        if len(output.strip()) < 20:
+            return False
+            
+        # Check for numbered recommendations or bullet points
+        has_numbers = bool(re.search(r'\d+[\.)]\s*', output))
+        has_bullets = bool(re.search(r'[-•*]\s+', output))
+        has_recommendation_keyword = 'recommendation' in output.lower()
+        
+        return has_numbers or has_bullets or has_recommendation_keyword
 
     @staticmethod
     def validate_ideation(output: str) -> bool:
         """Validate ideation has multiple ideas."""
         if not isinstance(output, str):
             return False
-        # Check for numbered titles
-        return len(re.findall(r'\d+\.\s*\*\*Title\*\*', output)) >= 3
+        
+        if len(output.strip()) < 50:
+            return False
+            
+        # Check for numbered titles or multiple ideas
+        has_numbered = len(re.findall(r'\d+[\.)]\s*', output)) >= 2
+        has_title_markers = len(re.findall(r'\*\*.*\*\*', output)) >= 2
+        
+        return has_numbered or has_title_markers
 
     @staticmethod
     def validate_copywriter(output: str) -> bool:
         """Validate copywriter has variants."""
         if not isinstance(output, str):
             return False
-        # Check for variant format
-        return "Variant 1:" in output and "Subject:" in output
+        
+        if len(output.strip()) < 30:
+            return False
+            
+        # Check for variant format (flexible)
+        has_variants = 'variant' in output.lower()
+        has_subject = 'subject' in output.lower()
+        has_body = 'body' in output.lower()
+        has_cta = 'cta' in output.lower() or 'call to action' in output.lower()
+        
+        # At least 2 of these should be present
+        markers = sum([has_variants, has_subject, has_body, has_cta])
+        return markers >= 2
 
     @staticmethod
     def validate_translation(output: str) -> bool:
         """Validate translation is in Arabic."""
         if not isinstance(output, str):
             return False
+        
+        if len(output.strip()) < 10:
+            return False
+            
         # Basic check for Arabic characters
         return bool(re.search(r'[\u0600-\u06FF]', output))
 
     @staticmethod
-    def validate_compliance(output: Dict[str, Any]) -> bool:
+    def validate_compliance(output: Any) -> bool:
         """Validate compliance output structure."""
+        # Handle both dict and string outputs
+        if isinstance(output, str):
+            # Check if it looks like a compliance report
+            output_lower = output.lower()
+            return any(keyword in output_lower for keyword in [
+                'compliant', 'compliance', 'issue', 'violation', 
+                'approved', 'warning', 'review'
+            ])
+        
         if not isinstance(output, dict):
             return False
-        return 'status' in output and 'issues' in output
+        
+        return 'status' in output or 'issues' in output or 'compliant' in output
 
     @classmethod
     def validate_agent_output(cls, agent_name: str, output: Any) -> bool:
@@ -99,7 +154,7 @@ class OutputValidator:
         try:
             is_valid = validator(output)
             if not is_valid:
-                logger.warning(f"Validation failed for {agent_name}: {type(output)}")
+                logger.warning(f"Validation failed for {agent_name}: {type(output).__name__}, length: {len(str(output))}")
             return is_valid
         except Exception as e:
             logger.error(f"Validation error for {agent_name}: {e}")

@@ -16,4 +16,5 @@ class AgentState(TypedDict):
     compliance: Optional[Dict[str, Any]]
     next_steps: Optional[List[str]]
     current_step_index: Optional[int]
+    trace_id: Optional[str]
     errors: List[str]

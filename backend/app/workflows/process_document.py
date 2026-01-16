@@ -18,7 +18,6 @@ async def run_document_workflow(file_path: str, user_request: str):
         with tracer.client.start_as_current_observation(
             as_type="span",
             name="document_processing_workflow",
-            # CRITICAL: Set input on the root observation - this becomes trace input
             input={"file_path": file_path, "user_request": user_request},
             metadata={"file_path": file_path}
         ) as trace:
@@ -32,7 +31,9 @@ async def run_document_workflow(file_path: str, user_request: str):
                 ) as load_span:
                     loader = FileLoader(file_path)
                     extracted_text = loader.load()
-                    load_span.update(output={"text_length": len(extracted_text) if extracted_text else 0})
+                    load_span.update(output={
+                        "text_length": len(extracted_text) if extracted_text else 0,
+                        "text": extracted_text if extracted_text else ""})
                 
                 if not extracted_text:
                     logger.error(f"Workflow failed: No text extracted from {file_path}")
@@ -56,7 +57,8 @@ async def run_document_workflow(file_path: str, user_request: str):
                             metadata={"quality_check": "low_density"}
                         )
                     else:
-                        validate_span.update(output={"clean_text_length": len(clean_text)})
+                        validate_span.update(output={"clean_text_length": len(clean_text)},
+                                             metadata={"quality_check": "high_density"})
 
                 # Intelligence Gathering
                 with trace.start_as_current_observation(
@@ -91,10 +93,11 @@ async def run_document_workflow(file_path: str, user_request: str):
                     final_state = await app_graph.ainvoke(initial_state, config=config)
                     graph_span.update(output={"final_state_keys": list(final_state.keys())})
 
-                # CRITICAL: Set trace-level output explicitly
+                # Set trace-level output explicitly
                 trace.update_trace(
                     output={
-                        "extraction": str(final_state.get("extraction", "")),  # Truncate for UI
+                        "raw_text": str(final_state.get("raw_text", "")),
+                        "extraction": str(final_state.get("extraction", "")),
                         "summary": str(final_state.get("summary", "")),
                         "analysis": str(final_state.get("analysis", "")),
                         "recommendation": str(final_state.get("recommendation", "")),

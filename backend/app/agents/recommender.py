@@ -29,6 +29,7 @@ class RecommenderAgent:
         - Be specific and practical; avoid generic advice.
         - Do NOT invent facts not present in the input.
         - If key information is missing, state an assumption briefly.
+        - If the user request specifies a language (e.g., translate to Arabic), output the entire response in that language.
 
         FORMAT (STRICT):
         1. Recommendation:

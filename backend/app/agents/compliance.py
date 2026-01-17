@@ -1,43 +1,107 @@
-from typing import Dict, List
+from typing import Dict, List, TypedDict
+import re
+from dataclasses import dataclass
+from enum import Enum
 from ..core.logging import logger
 
-class ComplianceAgent:
-    """Simple rule-based compliance checker for marketing content.
 
-    This agent intentionally uses deterministic checks (no LLM) so it
-    can be executed safely in tests and CI without external services.
-    It returns a dict with status: 'ok'|'review'|'block' and a list of issues.
+class Severity(str, Enum):
+    BLOCK = "block"
+    REVIEW = "review"
+    PRIVACY = "privacy"
+
+
+@dataclass(frozen=True)
+class ComplianceRule:
+    pattern: str
+    severity: Severity
+    description: str
+
+
+class Issue(TypedDict):
+    severity: str
+    match: str
+    description: str
+
+
+class ComplianceAgent:
+    """
+    Deterministic compliance agent for marketing content.
+    Safe for CI and production pipelines (no LLM usage).
     """
 
-    BLOCK_KEYWORDS = ["spam", "sell personal", "sell data", "harvest", "cookie stuffing"]
-    REVIEW_KEYWORDS = ["guarantee", "risk-free", "no risk", "best ever", "unlimited"]
-    PRIVACY_KEYWORDS = ["personal data", "ssn", "social security", "credit card", "dob", "date of birth"]
+    RULES: List[ComplianceRule] = [
+        # BLOCK
+        ComplianceRule(
+            pattern=r"\b(spam|cookie stuffing|harvest|sell data|sell personal)\b",
+            severity=Severity.BLOCK,
+            description="Illegal or unethical marketing behavior"
+        ),
 
-    def __init__(self):
-        pass
+        # PRIVACY
+        ComplianceRule(
+            pattern=r"\b(ssn|social security|credit card|dob|date of birth|personal data)\b",
+            severity=Severity.PRIVACY,
+            description="Sensitive personal data detected"
+        ),
+
+        # REVIEW
+        ComplianceRule(
+            pattern=r"\b(guarantee|risk[- ]?free|best ever|unlimited)\b",
+            severity=Severity.REVIEW,
+            description="Potential misleading marketing claim"
+        ),
+    ]
 
     def run(self, content: str) -> Dict[str, object]:
-        logger.info("Agent: Compliance checking content...")
-        issues: List[str] = []
+        logger.info("Agent: Compliance checking content")
 
-        lower = content.lower()
+        normalized = self._normalize(content)
+        issues: List[Issue] = []
 
-        for kw in self.BLOCK_KEYWORDS:
-            if kw in lower:
-                issues.append(f"block: contains '{kw}'")
+        for rule in self.RULES:
+            matches = re.findall(rule.pattern, normalized, flags=re.IGNORECASE)
 
-        for kw in self.PRIVACY_KEYWORDS:
-            if kw in lower:
-                issues.append(f"privacy: contains '{kw}'")
+            for match in matches:
+                issues.append({
+                    "severity": rule.severity.value,
+                    "match": match,
+                    "description": rule.description
+                })
 
-        for kw in self.REVIEW_KEYWORDS:
-            if kw in lower:
-                issues.append(f"review: contains marketing-claim '{kw}'")
+        status = self._resolve_status(issues)
 
-        status = "ok"
-        if any(i.startswith("block") for i in issues):
-            status = "block"
-        elif issues:
-            status = "review"
+        return {
+            "status": status,
+            "issues": issues,
+            "issue_count": len(issues),
+            "risk_score": self._calculate_risk(issues)
+        }
 
-        return {"status": status, "issues": issues}
+    def _normalize(self, text: str) -> str:
+        """Basic text normalization pipeline."""
+        text = text.lower()
+        text = re.sub(r"\s+", " ", text)
+        return text.strip()
+
+    def _resolve_status(self, issues: List[Issue]) -> str:
+        if any(i["severity"] == Severity.BLOCK for i in issues):
+            return Severity.BLOCK.value
+
+        if any(i["severity"] == Severity.PRIVACY for i in issues):
+            return Severity.REVIEW.value
+
+        if issues:
+            return Severity.REVIEW.value
+
+        return "ok"
+
+    def _calculate_risk(self, issues: List[Issue]) -> int:
+        """Simple weighted risk scoring for analytics."""
+        weights = {
+            Severity.BLOCK.value: 5,
+            Severity.PRIVACY.value: 3,
+            Severity.REVIEW.value: 1,
+        }
+
+        return sum(weights[i["severity"]] for i in issues)

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 import { AnalysisResponse } from '../types/api';
 
 interface Props { data: AnalysisResponse; }
@@ -22,40 +23,6 @@ function renderJSONSchema(schema: any) {
       ))}
     </div>
   );
-}
-
-function parseToFragments(text: string) {
-  // Very small parser: split into lines and detect headings and lists
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const fragments: React.ReactNode[] = [];
-  let currentList: string[] | null = null;
-
-  const flushList = () => {
-    if (currentList && currentList.length) {
-      fragments.push(<ul key={fragments.length}>{currentList.map((it, i) => <li key={i} dangerouslySetInnerHTML={{ __html: it }} />)}</ul>);
-      currentList = null;
-    }
-  };
-
-  for (const line of lines) {
-    if (/^####?\s+/.test(line)) {
-      flushList();
-      fragments.push(<h4 key={fragments.length}>{line.replace(/^#+\s+/, '')}</h4>);
-      continue;
-    }
-    if (/^\d+\.\s+/.test(line) || /^[-*]\s+/.test(line)) {
-      if (!currentList) currentList = [];
-      // Convert simple markdown bold to <strong>
-      const html = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/^\d+\.\s+/, '');
-      currentList.push(html);
-      continue;
-    }
-    // plain paragraph
-    flushList();
-    fragments.push(<p key={fragments.length} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') }} />);
-  }
-  flushList();
-  return fragments;
 }
 
 export const ResultCard: React.FC<Props> = ({ data }) => {
@@ -97,28 +64,28 @@ export const ResultCard: React.FC<Props> = ({ data }) => {
       {data.analysis && (
         <section className="analysis-box">
           <h3>💡 Analysis</h3>
-          <div className="analysis-formatted">{parseToFragments(data.analysis)}</div>
+          <div className="analysis-formatted"><ReactMarkdown>{data.analysis}</ReactMarkdown></div>
         </section>
       )}
 
       {data.recommendation && (
         <section className="recommendation-box">
           <h3>✅ Recommendations</h3>
-          <div className="recommendation-list">{parseToFragments(data.recommendation)}</div>
+          <div className="recommendation-list"><ReactMarkdown>{data.recommendation}</ReactMarkdown></div>
         </section>
       )}
 
       {data.ideation && (
         <section className="ideation-box">
           <h3>💡 Campaign Ideas</h3>
-          <div className="ideation-list">{parseToFragments(data.ideation)}</div>
+          <div className="ideation-list"><ReactMarkdown>{data.ideation}</ReactMarkdown></div>
         </section>
       )}
 
       {data.copywriting && (
         <section className="copy-box">
           <h3>📄 Copywriting</h3>
-          <div className="copy-content">{parseToFragments(data.copywriting)}</div>
+          <div className="copy-content"><ReactMarkdown>{data.copywriting}</ReactMarkdown></div>
         </section>
       )}
 
@@ -137,7 +104,7 @@ export const ResultCard: React.FC<Props> = ({ data }) => {
               )}
             </div>
           ) : (
-            <div className="compliance-content">{parseToFragments(data.compliance)}</div>
+            <div className="compliance-content"><ReactMarkdown>{data.compliance}</ReactMarkdown></div>
           )}
         </section>
       )}

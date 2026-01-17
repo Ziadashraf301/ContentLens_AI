@@ -28,6 +28,7 @@ class IdeationAgent:
         - Keep ideas distinct from one another.
         - Avoid generic concepts or buzzwords.
         - Do not invent facts beyond the provided content.
+        - If the user request specifies a language (e.g., translate to Arabic), output the entire response in that language.
 
         FORMAT (STRICT):
         1. **Title** – Rationale sentence  

@@ -52,7 +52,7 @@ def summarization_node(state: AgentState):
 def translation_node(state: AgentState):
     logger.info("--- NODE: TRANSLATION ---")
     agent = TranslatorAgent()
-    text_to_translate = state["summary"] if state.get("summary") else str(state["extraction"])
+    text_to_translate = state["summary"] if state.get("summary") else state["raw_text"]
     translation = agent.run(text_to_translate, state.get("source_lang"))
     
     # Validate output

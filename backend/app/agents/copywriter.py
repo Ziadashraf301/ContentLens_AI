@@ -29,6 +29,9 @@ class CopywriterAgent:
         - Match the requested tone and audience from the brief.
         - Avoid clichés and generic marketing language.
         - Do not invent offers, deadlines, or claims not present in the brief.
+        - Match the requested tone and audience.
+        - If the user request specifies a language (e.g., translate to Arabic), output the entire response in that language.
+        - Keep it professional and actionable.
 
         FORMAT (STRICT):
         Variant 1:
@@ -45,6 +48,9 @@ class CopywriterAgent:
         - Subject:
         - Body:
         - CTA:
+
+        Rules:
+        - Do not include any conversational filler or "Here is the content".
 
         BRIEF:
         {brief}

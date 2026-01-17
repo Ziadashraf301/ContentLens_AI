@@ -29,7 +29,10 @@ def test_compliance_agent_blocks_spam():
     res = ca.run("This campaign will spam users and sell personal data")
     assert isinstance(res, dict)
     assert res["status"] == "block"
-    assert any("spam" in i or "sell personal" in i for i in res["issues"]) 
+    assert any(
+    "spam" in i["match"] or "sell personal" in i["match"]
+    for i in res["issues"]
+    )
 
 
 def test_config_defaults():

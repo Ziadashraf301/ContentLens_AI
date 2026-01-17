@@ -22,7 +22,7 @@ class OutputValidator:
             return False
         
         # Check for at least some key fields
-        required_keys = ['CampaignName', 'Brand', 'TargetAudience']
+        required_keys = ['CampaignName', 'Brand', 'TargetAudience', 'CoreMessage', 'ActionableDataPoints', 'CallToAction', 'AdvertiserContact']
         return any(key in output for key in required_keys)
 
     @staticmethod
@@ -117,20 +117,61 @@ class OutputValidator:
 
     @staticmethod
     def validate_compliance(output: Any) -> bool:
-        """Validate compliance output structure."""
-        # Handle both dict and string outputs
-        if isinstance(output, str):
-            # Check if it looks like a compliance report
-            output_lower = output.lower()
-            return any(keyword in output_lower for keyword in [
-                'compliant', 'compliance', 'issue', 'violation', 
-                'approved', 'warning', 'review'
-            ])
-        
+        """Validate ComplianceAgent output used by compliance_node."""
+
+        # Compliance node ALWAYS returns structured dict
         if not isinstance(output, dict):
             return False
-        
-        return 'status' in output or 'issues' in output or 'compliant' in output
+
+        # Required schema from ComplianceAgent.run()
+        required_keys = {"status", "issues", "issue_count", "risk_score"}
+        if not required_keys.issubset(output):
+            return False
+
+        # Status validation
+        status = output.get("status")
+        if status not in {"ok", "review", "block"}:
+            return False
+
+        # Issues validation
+        issues = output.get("issues")
+        if not isinstance(issues, list):
+            return False
+
+        for issue in issues:
+            if not isinstance(issue, dict):
+                return False
+
+            if not {"severity", "match", "description"}.issubset(issue):
+                return False
+
+            if issue["severity"] not in {"block", "review", "privacy"}:
+                return False
+
+            if not isinstance(issue["match"], str):
+                return False
+
+            if not isinstance(issue["description"], str):
+                return False
+
+        # issue_count validation
+        issue_count = output.get("issue_count")
+        if not isinstance(issue_count, int):
+            return False
+
+        if issue_count != len(issues):
+            return False
+
+        # risk_score validation
+        risk_score = output.get("risk_score")
+        if not isinstance(risk_score, int):
+            return False
+
+        if risk_score < 0:
+            return False
+
+        return True
+
 
     @classmethod
     def validate_agent_output(cls, agent_name: str, output: Any) -> bool:

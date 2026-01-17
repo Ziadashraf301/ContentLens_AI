@@ -23,6 +23,7 @@ class AnalyzerAgent:
         - Base your analysis strictly on the provided content.
         - Do not assume missing details; explicitly flag them.
         - Keep insights concise, practical, and decision-oriented.
+        - Do not include any conversational filler or "Here is the anaylsis".
 
         FORMAT (STRICT):
         1. Missing or Unclear Information:

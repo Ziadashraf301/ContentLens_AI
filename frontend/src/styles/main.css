@@ -199,6 +199,34 @@ main {
   margin-top: 0.5rem;
 }
 
+.analysis-formatted ul {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.analysis-formatted li {
+  margin-bottom: 0.5rem;
+}
+
+.analysis-formatted strong {
+  font-weight: 600;
+  color: var(--slate-900);
+}
+
+.summary-content ul {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.summary-content li {
+  margin-bottom: 0.5rem;
+}
+
+.summary-content strong {
+  font-weight: 600;
+  color: var(--slate-900);
+}
+
 .recommendation-list ul {
   margin-top: 0.5rem;
   padding-left: 1.25rem;

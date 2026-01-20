@@ -40,10 +40,13 @@ class ExtractorAgent:
         - If a field is missing in the text, set it to null.
         - Use the specific language found in the text.
 
-        {format_instructions}
-
+        EXAMPLE:
+        AI: Based on the text, I extract the following information.
+        
         USER TEXT TO ANALYZE:
         {text}
+
+        {format_instructions}
         """
 
         self.prompt = PromptTemplate(

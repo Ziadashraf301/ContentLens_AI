@@ -18,3 +18,4 @@ class AgentState(TypedDict):
     current_step_index: Optional[int]
     trace_id: Optional[str]
     errors: List[str]
+    evaluations: List[Dict[str, Any]]

@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL_EXTRACTOR: str = "llama3.1"
     OLLAMA_MODEL_ROUTER: str = "mistral"
+    OLLAMA_MODEL_REFINER: str = "llama3.1"
+    OLLAMA_MODEL_JUDGE: str = "llama3.1"
 
     OLLAMA_MODEL_SUMMARIZER: str = "llama3.1"
     OLLAMA_MODEL_TRANSLATOR: str = "mistral"
@@ -31,6 +33,8 @@ class Settings(BaseSettings):
     # Model Temperatures
     TEMPERATURE_EXTRACTOR: float = 0.0
     TEMPERATURE_ROUTER: float = 0.0
+    TEMPERATURE_REFINER: float = 0.2
+    TEMPERATURE_JUDGE: float = 0.0
     TEMPERATURE_SUMMARIZER: float = 0.3
     TEMPERATURE_TRANSLATOR: float = 0.0
     TEMPERATURE_ANALYZER: float = 0.2

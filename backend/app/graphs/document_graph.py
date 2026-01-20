@@ -1,6 +1,8 @@
 from langgraph.graph import StateGraph, END
 from .state import AgentState
 from ..agents.extractor import ExtractorAgent
+from ..agents.refiner import RefinerAgent
+from ..agents.judge import JudgeAgent
 from ..agents.router import RouterAgent
 from ..agents.summarizer import SummarizerAgent
 from ..agents.translator import TranslatorAgent
@@ -21,10 +23,34 @@ def extraction_node(state: AgentState):
     result = agent.run(state["raw_text"])
     
     # Validate output
-    if not OutputValidator.validate_agent_output('extraction', result):
+    code_valid = OutputValidator.validate_agent_output('extraction', result)
+    if not code_valid:
         logger.warning("Extraction output validation failed")
     
-    return {"extraction": result}
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('extraction', state["raw_text"], str(result))
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
+    
+    return {"extraction": result, "evaluations": evaluations}
+
+def refiner_node(state: AgentState):
+    logger.info("--- NODE: REFINEMENT ---")
+    agent = RefinerAgent()
+    refined_request = agent.run(state["extraction"], state["user_request"])
+    
+    # LLM Judge evaluation for refinement
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('refinement', str(state["extraction"]) + " | " + state["user_request"], refined_request)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
+    
+    return {"user_request": refined_request, "evaluations": evaluations}
 
 def router_node(state: AgentState):
     if not state.get("next_steps"):
@@ -39,14 +65,24 @@ def summarization_node(state: AgentState):
     summary = agent.run(state["extraction"])
     
     # Validate output
-    if not OutputValidator.validate_agent_output('summary', summary):
+    code_valid = OutputValidator.validate_agent_output('summary', summary)
+    if not code_valid:
         logger.warning("Summary output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('summary', str(state["extraction"]), summary)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
     
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
         "summary": summary,
-        "current_step_index": current_index + 1 
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
 
 def translation_node(state: AgentState):
@@ -56,14 +92,24 @@ def translation_node(state: AgentState):
     translation = agent.run(text_to_translate, state.get("source_lang"))
     
     # Validate output
-    if not OutputValidator.validate_agent_output('translation', translation):
+    code_valid = OutputValidator.validate_agent_output('translation', translation)
+    if not code_valid:
         logger.warning("Translation output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('translation', text_to_translate, translation)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
     
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
         "translation": translation,
-        "current_step_index": current_index + 1  
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
 
 def analysis_node(state: AgentState):
@@ -72,14 +118,24 @@ def analysis_node(state: AgentState):
     analysis_result = agent.run(state["extraction"])
     
     # Validate output
-    if not OutputValidator.validate_agent_output('analysis', analysis_result):
+    code_valid = OutputValidator.validate_agent_output('analysis', analysis_result)
+    if not code_valid:
         logger.warning("Analysis output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('analysis', str(state["extraction"]), analysis_result)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
     
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
         "analysis": analysis_result,
-        "current_step_index": current_index + 1 
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
 
 def recommendation_node(state: AgentState):
@@ -90,14 +146,24 @@ def recommendation_node(state: AgentState):
     recommendations = agent.run(input_content, user_request)
     
     # Validate output
-    if not OutputValidator.validate_agent_output('recommendation', recommendations):
+    code_valid = OutputValidator.validate_agent_output('recommendation', recommendations)
+    if not code_valid:
         logger.warning("Recommendation output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('recommendation', input_content + " | " + user_request, recommendations)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
     
     # Increment step counter
     current_index = state.get("current_step_index", 0)
     return {
         "recommendation": recommendations,
-        "current_step_index": current_index + 1 
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
     
 def ideation_node(state: AgentState):
@@ -107,13 +173,23 @@ def ideation_node(state: AgentState):
     ideas = agent.run(input_content)
     
     # Validate output
-    if not OutputValidator.validate_agent_output('ideation', ideas):
+    code_valid = OutputValidator.validate_agent_output('ideation', ideas)
+    if not code_valid:
         logger.warning("Ideation output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('ideation', input_content, ideas)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
 
     current_index = state.get("current_step_index", 0)
     return {
         "ideation": ideas,
-        "current_step_index": current_index + 1
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
 
 
@@ -126,13 +202,23 @@ def copywriter_node(state: AgentState):
     copy = agent.run(str(brief), user_request)
     
     # Validate output
-    if not OutputValidator.validate_agent_output('copywriter', copy):
+    code_valid = OutputValidator.validate_agent_output('copywriter', copy)
+    if not code_valid:
         logger.warning("Copywriter output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('copywriter', brief + " | " + user_request, copy)
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
     
     current_index = state.get("current_step_index", 0)
     return {
         "copywriting": copy,
-        "current_step_index": current_index + 1
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
 
 
@@ -144,13 +230,23 @@ def compliance_node(state: AgentState):
     compliance_report = agent.run(to_check)
     
     # Validate output
-    if not OutputValidator.validate_agent_output('compliance', compliance_report):
+    code_valid = OutputValidator.validate_agent_output('compliance', compliance_report)
+    if not code_valid:
         logger.warning("Compliance output validation failed")
+    
+    # LLM Judge evaluation
+    judge = JudgeAgent()
+    evaluation = judge.evaluate('compliance', to_check, str(compliance_report))
+    
+    # Add evaluation to list
+    evaluations = state.get("evaluations", [])
+    evaluations.append(evaluation)
 
     current_index = state.get("current_step_index", 0)
     return {
         "compliance": compliance_report,
-        "current_step_index": current_index + 1
+        "current_step_index": current_index + 1,
+        "evaluations": evaluations
     }
 
 def routing_logic(state: AgentState):
@@ -188,6 +284,7 @@ def create_graph():
 
     # Add nodes (use distinct node names to avoid collision with channels)
     workflow.add_node("node_extract", extraction_node)
+    workflow.add_node("node_refine", refiner_node)
     workflow.add_node("node_router", router_node)
     workflow.add_node("node_summarize", summarization_node)
     workflow.add_node("node_translate", translation_node)
@@ -199,7 +296,8 @@ def create_graph():
 
     # Entry point
     workflow.set_entry_point("node_extract")
-    workflow.add_edge("node_extract", "node_router")
+    workflow.add_edge("node_extract", "node_refine")
+    workflow.add_edge("node_refine", "node_router")
 
     # Conditional routing from router
     # Use distinct channel names to avoid collisions with node names

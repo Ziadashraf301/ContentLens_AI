@@ -50,7 +50,7 @@ export const ResultCard: React.FC<Props> = ({ data }) => {
       {data.summary && (
         <section>
           <h3>📝 Executive Summary</h3>
-          <p>{data.summary}</p>
+          <div className="summary-content"><ReactMarkdown>{data.summary}</ReactMarkdown></div>
         </section>
       )}
 

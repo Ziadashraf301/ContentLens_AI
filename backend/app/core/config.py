@@ -49,7 +49,7 @@ class Settings(BaseSettings):
 
     # File Processing
     MAX_FILE_SIZE_MB: int = 20
-    ALLOWED_EXTENSIONS: str = "pdf,docx,txt,png,jpg,jpeg"
+    ALLOWED_EXTENSIONS: str = "pdf,docx,txt,png,jpg,jpeg,gif"
 
     class Config:
         env_file = ".env"

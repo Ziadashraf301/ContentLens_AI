@@ -3,22 +3,40 @@ import React, { useState } from 'react';
 interface Props {
   onUpload: (file: File, request: string) => void;
   loading: boolean;
+  uploadProgress?: number;
+  phase?: 'idle' | 'uploading' | 'processing';
 }
 
-export const FileUploader: React.FC<Props> = ({ onUpload, loading }) => {
+export const FileUploader: React.FC<Props> = ({ onUpload, loading, uploadProgress = 0, phase = 'idle' }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [request, setRequest] = useState('Analyze this brief');
+  const [request, setRequest] = useState('');
 
   return (
     <div className="uploader-container">
-      <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-      <textarea 
-        value={request} 
-        onChange={(e) => setRequest(e.target.value)}
-        placeholder="Instructions (e.g., Translate to Arabic)"
+      <input
+        type="file"
+        onChange={(e) => setFile(e.target.files?.[0] || null)}
       />
-      <button onClick={() => file && onUpload(file, request)} disabled={loading || !file}>
-        {loading ? 'Agents working...' : 'Run Analysis'}
+
+      <textarea
+        value={request}
+        onChange={(e) => setRequest(e.target.value)}
+        placeholder="Optional instructions (leave empty to only extract text)"
+        disabled={!file}
+      />
+
+      {phase === 'uploading' && (
+        <div className="upload-progress">
+          <div className="progress-bar" style={{ width: `${uploadProgress}%` }} />
+          <div className="progress-label">Uploading {uploadProgress}%</div>
+        </div>
+      )}
+
+      <button
+        onClick={() => file && onUpload(file, request)}
+        disabled={loading || !file || phase === 'uploading'}
+      >
+        {phase === 'uploading' ? `Uploading ${uploadProgress}%` : loading ? 'Agents working...' : 'Run Analysis'}
       </button>
     </div>
   );

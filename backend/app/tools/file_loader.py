@@ -34,12 +34,17 @@ class FileLoader:
             logger.error(f"File not found: {self.file_path}")
             raise FileNotFoundError(f"File not found: {self.file_path}")
 
-        # Use utility for extension check
+        # Extension check
         ext = get_file_extension(self.file_path).replace(".", "")
         if ext not in self.SUPPORTED_EXTENSIONS:
+            supported = settings.ALLOWED_EXTENSIONS
             logger.error(f"Unsupported file type: {ext}")
-            raise ValueError(f"Unsupported file type: {ext}")
+            raise ValueError(
+                f"File type '.{ext}' is not supported. "
+                f"Supported formats: {supported}"
+            )
 
+        # Size check
         if self.file_path.stat().st_size > settings.MAX_FILE_SIZE_MB * 1024 * 1024:
             logger.error(f"File too large: {self.file_path}")
             raise ValueError(f"File exceeds max size of {settings.MAX_FILE_SIZE_MB} MB")
@@ -49,23 +54,32 @@ class FileLoader:
         try:
             ext = get_file_extension(self.file_path)
             
-            if ext == ".txt":
-                text = self._load_txt()
-            elif ext == ".pdf":
-                text = self._load_pdf()
-            elif ext == ".docx":
-                text = self._load_docx()
-            elif ext in [".png", ".jpg", ".jpeg"]:
-                text = self._load_image()
-            else:
-                raise ValueError(f"Unsupported extension: {ext}")
+            # Use dict mapping
+            loaders = {
+                ".txt": self._load_txt,
+                ".pdf": self._load_pdf,
+                ".docx": self._load_docx,
+                ".png": self._load_image,
+                ".jpg": self._load_image,
+                ".jpeg": self._load_image,
+                ".gif": self._load_image,
+            }
 
-            # APPLY CLEANING: Ensure the text is sanitized before it hits the agents
+            loader  = loaders.get(ext)
+
+            if not loader:
+                raise ValueError(f"No loader found for extension: {ext}")
+            
+            text = loader()
+
+            # Ensure the text is sanitized before it hits the agents
             return clean_extra_whitespace(text)
 
         except Exception as e:
             logger.error(f"FileLoader error on {self.file_path}: {e}")
-            raise FileProcessingError(f"Failed to process {self.file_path}: {str(e)}")
+            raise FileProcessingError(
+                f"Failed to process file: {str(e)}"
+            ) from e
 
     def _load_txt(self) -> str:
         logger.info(f"Loading TXT file: {self.file_path}")

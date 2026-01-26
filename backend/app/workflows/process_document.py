@@ -7,7 +7,7 @@ from ..core.langfuse import get_langfuse_callback, get_langfuse_tracer
 from langfuse import propagate_attributes
 
 
-async def run_document_workflow(file_path: str, user_request: str):
+async def run_document_workflow(file_path: str, user_request: str, extract_only: bool = False):
     """
     Orchestrates the pre-processing and execution of the AI Graph.
     """
@@ -70,10 +70,14 @@ async def run_document_workflow(file_path: str, user_request: str):
                     lang_span.update(output={"detected_lang": source_lang})
 
                 # Prepare the Initial State for LangGraph
+                # If extract_only is True, ensure user_request is empty so the router can decide to end flow
+                effective_request = "" if extract_only or not user_request or user_request.strip() == "" else user_request
+
                 initial_state = {
                     "raw_text": clean_text,
-                    "user_request": user_request,
+                    "user_request": effective_request,
                     "source_lang": source_lang,
+                    "extract_only": extract_only,
                     "errors": []
                 }
 

@@ -36,7 +36,7 @@ class BriefValidator:
         "requirement", "constraint", "guideline", "compliance", "approval"
     ]
 
-    MIN_KEYWORD_MATCH = 4  # better signal than 2
+    MIN_KEYWORD_MATCH = 4
 
     @staticmethod
     def is_valid_brief(text: str) -> bool:

@@ -12,8 +12,7 @@ router = APIRouter()
 @router.post("/process-document", response_model=AnalysisResponse)
 async def process_document(
     file: UploadFile = File(...),
-    user_request: str = Form("Analyze this document"),
-    extract_only: str = Form("False")
+    user_request: str = Form("Analyze this document")
 ):
     """
     1. Receives file and user intent from Frontend.
@@ -32,11 +31,10 @@ async def process_document(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        logger.info(f"API: Received file {file.filename}. Request: {user_request} extract_only={extract_only}")
+        logger.info(f"API: Received file {file.filename}. Request: {user_request}")
 
         # Convert extract_only to bool and trigger the workflow
-        extract_flag = str(extract_only).lower() in ("1", "true", "yes")
-        result = await run_document_workflow(file_path, user_request, extract_flag)
+        result = await run_document_workflow(file_path, user_request)
 
         if "error" in result and not result.get("extraction"):
              raise HTTPException(status_code=500, detail=result["error"])

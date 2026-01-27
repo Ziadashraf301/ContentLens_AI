@@ -34,41 +34,27 @@ export const FileUploader: React.FC<Props> = ({
         accept=".pdf,.doc,.docx,.txt"
       />
 
-      {phase === 'uploading' && (
+      {(phase === 'uploading' || phase === 'processing') && (
         <div className="upload-progress">
           <div className="progress-bar" style={{ width: `${uploadProgress}%` }} />
           <div className="progress-label">
-            Uploading: {uploadProgress}%
+            {phase === 'uploading' ? `Uploading: ${uploadProgress}%` : 'Processing your document...'}
           </div>
-        </div>
-      )}
-
-      {isFileUploaded && phase === 'idle' && (
-        <div className="upload-success">
-          ✓ File uploaded successfully! You can now run the analysis.
         </div>
       )}
 
       <textarea
         value={request}
         onChange={(e) => setRequest(e.target.value)}
-        placeholder="Optional instructions (e.g., 'Extract key points and translate to Arabic')"
-        disabled={!isFileUploaded || loading}
+        placeholder="Optional instructions (leave empty to only extract text)"
+        disabled={!file || loading}
       />
 
       <button
         onClick={() => file && onUpload(file, request)}
-        disabled={loading || !isFileUploaded}
-        className={loading ? 'processing' : ''}
+        disabled={loading || !file}
       >
-        {phase === 'processing' ? (
-          <>
-            <div className="spinner-small"></div>
-            Processing...
-          </>
-        ) : (
-          'Run Analysis'
-        )}
+        {loading ? 'Processing...' : 'Run Analysis'}
       </button>
     </div>
   );

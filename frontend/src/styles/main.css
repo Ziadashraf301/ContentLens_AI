@@ -141,6 +141,9 @@ main {
 .upload-progress {
   margin: 1rem 0;
   width: 100%;
+  background: var(--slate-200);
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .progress-bar {
@@ -155,6 +158,16 @@ main {
   font-size: 0.9rem;
   color: var(--slate-700);
   text-align: center;
+}
+
+.error {
+  padding: 1rem;
+  margin-top: 1rem;
+  background: #fee;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  color: var(--danger);
+  font-weight: 500;
 }
 
 /* Result Sections */

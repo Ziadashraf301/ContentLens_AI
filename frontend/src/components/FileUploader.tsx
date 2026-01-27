@@ -5,40 +5,70 @@ interface Props {
   loading: boolean;
   uploadProgress?: number;
   phase?: 'idle' | 'uploading' | 'processing';
+  isFileUploaded?: boolean;
 }
 
-export const FileUploader: React.FC<Props> = ({ onUpload, loading, uploadProgress = 0, phase = 'idle' }) => {
+export const FileUploader: React.FC<Props> = ({ 
+  onUpload, 
+  loading, 
+  uploadProgress = 0, 
+  phase = 'idle',
+  isFileUploaded = false 
+}) => {
   const [file, setFile] = useState<File | null>(null);
   const [request, setRequest] = useState('');
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    setFile(selectedFile);
+  };
+
   return (
     <div className="uploader-container">
+      <h2>Upload Document</h2>
+      
       <input
         type="file"
-        onChange={(e) => setFile(e.target.files?.[0] || null)}
+        onChange={handleFileChange}
+        disabled={loading}
+        accept=".pdf,.doc,.docx,.txt"
       />
 
-      <textarea
-        value={request}
-        onChange={(e) => setRequest(e.target.value)}
-        placeholder="Optional instructions (leave empty to only extract text)"
-        disabled={!file}
-      />
-
-      {phase !== 'idle' && (
+      {phase === 'uploading' && (
         <div className="upload-progress">
           <div className="progress-bar" style={{ width: `${uploadProgress}%` }} />
           <div className="progress-label">
-            {phase === 'uploading' ? `Uploading ${uploadProgress}%` : 'Processing...'}
+            Uploading: {uploadProgress}%
           </div>
         </div>
       )}
 
+      {isFileUploaded && phase === 'idle' && (
+        <div className="upload-success">
+          ✓ File uploaded successfully! You can now run the analysis.
+        </div>
+      )}
+
+      <textarea
+        value={request}
+        onChange={(e) => setRequest(e.target.value)}
+        placeholder="Optional instructions (e.g., 'Extract key points and translate to Arabic')"
+        disabled={!isFileUploaded || loading}
+      />
+
       <button
         onClick={() => file && onUpload(file, request)}
-        disabled={loading || !file}
+        disabled={loading || !isFileUploaded}
+        className={loading ? 'processing' : ''}
       >
-        {loading ? 'Processing...' : 'Run Analysis'}
+        {phase === 'processing' ? (
+          <>
+            <div className="spinner-small"></div>
+            Processing...
+          </>
+        ) : (
+          'Run Analysis'
+        )}
       </button>
     </div>
   );

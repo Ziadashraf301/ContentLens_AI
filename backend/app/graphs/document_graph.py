@@ -3,6 +3,7 @@ from ..models.state.state import AgentState
 from ..nodes.extraction_node import extraction_node
 from ..nodes.refiner_node import refiner_node
 from ..nodes.router_node import router_node, routing_logic
+from ..nodes.parallel_batch_node import parallel_batch_executor
 from ..nodes.summarization_node import summarization_node
 from ..nodes.translation_node import translation_node
 from ..nodes.analysis_node import analysis_node
@@ -19,6 +20,7 @@ def create_graph():
     workflow.add_node("node_extract", extraction_node)
     workflow.add_node("node_refine", refiner_node)
     workflow.add_node("node_router", router_node)
+    workflow.add_node("node_parallel_batch", parallel_batch_executor)  # NEW: Parallel execution node
     workflow.add_node("node_summarize", summarization_node)
     workflow.add_node("node_translate", translation_node)
     workflow.add_node("node_analyze", analysis_node)
@@ -31,33 +33,34 @@ def create_graph():
     workflow.set_entry_point("node_extract")
     workflow.add_edge("node_extract", "node_refine")
     workflow.add_edge("node_refine", "node_router")
-
-    # Conditional routing from router - PARALLEL EXECUTION
-    # All agents in the same batch are executed in parallel, then return to router
+    
+    # After router groups tasks, go to parallel executor instead of conditional routing
+    workflow.add_edge("node_router", "node_parallel_batch")
+    
+    # After parallel batch completes, check if there are more batches
     workflow.add_conditional_edges(
-        "node_router",
-        routing_logic,
+        "node_parallel_batch",
+        _batch_complete_logic,
         {
-            "to_summarize": "node_summarize",
-            "to_translate": "node_translate",
-            "to_analyze": "node_analyze",
-            "to_recommend": "node_recommend",
-            "to_ideate": "node_ideate",
-            "to_copywrite": "node_copywrite",
-            "to_compliance": "node_compliance",
-            "end": END
+            "continue": "node_parallel_batch",  # More batches to process
+            "end": END                           # All batches done
         }
     )
 
-    # After each task, go back to router to check for next batch of parallel tasks
-    workflow.add_edge("node_summarize", "node_router")
-    workflow.add_edge("node_translate", "node_router")
-    workflow.add_edge("node_analyze", "node_router")
-    workflow.add_edge("node_recommend", "node_router")
-    workflow.add_edge("node_ideate", "node_router")
-    workflow.add_edge("node_copywrite", "node_router")
-    workflow.add_edge("node_compliance", "node_router")
-
     return workflow.compile()
+
+
+def _batch_complete_logic(state: AgentState) -> str:
+    """
+    Checks if there are more batches to process after parallel execution.
+    """
+    batches = state.get("parallel_batches", [])
+    batch_index = state.get("current_batch_index", 0)
+    
+    if batch_index < len(batches):
+        return "continue"  # More batches to process
+    else:
+        return "end"  # All batches completed
+
 
 app_graph = create_graph()

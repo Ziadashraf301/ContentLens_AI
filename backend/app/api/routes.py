@@ -2,7 +2,7 @@ import os
 import shutil
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from ..workflows.process_document import run_document_workflow
-from .schemas import AnalysisResponse, ScoreRequest
+from ..models.schemas.ScoreRequest import AnalysisResponse, ScoreRequest
 from ..core.logging import logger
 from ..core.langfuse import get_langfuse_client
 

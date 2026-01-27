@@ -12,7 +12,6 @@ export const analyzeDocument = (
   formData.append('file', file);
   formData.append('user_request', request);
   // If request is empty, signal backend to run extractor+router flow
-  formData.append('extract_only', String(request.trim() === ''));
 
   const endpoint = API_BASE ? `${API_BASE}/api/process-document` : '/api/process-document';
 

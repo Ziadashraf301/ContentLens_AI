@@ -138,6 +138,25 @@ main {
   color: var(--slate-500);
 }
 
+.upload-progress {
+  margin: 1rem 0;
+  width: 100%;
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-label {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--slate-700);
+  text-align: center;
+}
+
 /* Result Sections */
 .result-card section {
   margin-top: 2rem;

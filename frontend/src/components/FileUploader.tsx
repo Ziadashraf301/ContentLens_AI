@@ -25,18 +25,20 @@ export const FileUploader: React.FC<Props> = ({ onUpload, loading, uploadProgres
         disabled={!file}
       />
 
-      {phase === 'uploading' && (
+      {phase !== 'idle' && (
         <div className="upload-progress">
           <div className="progress-bar" style={{ width: `${uploadProgress}%` }} />
-          <div className="progress-label">Uploading {uploadProgress}%</div>
+          <div className="progress-label">
+            {phase === 'uploading' ? `Uploading ${uploadProgress}%` : 'Processing...'}
+          </div>
         </div>
       )}
 
       <button
         onClick={() => file && onUpload(file, request)}
-        disabled={loading || !file || phase === 'uploading'}
+        disabled={loading || !file}
       >
-        {phase === 'uploading' ? `Uploading ${uploadProgress}%` : loading ? 'Agents working...' : 'Run Analysis'}
+        {loading ? 'Processing...' : 'Run Analysis'}
       </button>
     </div>
   );

@@ -24,11 +24,4 @@ def extraction_node(state: AgentState):
     evaluations = state.get("evaluations", [])
     evaluations.append(evaluation)
     
-    # Store extracted text for agents to use
-    extracted_text = result if isinstance(result, str) else str(result)
-    
-    return {
-        "extraction": result,
-        "extracted_text": extracted_text,
-        "evaluations": evaluations
-    }
+    return {"extraction": result, "evaluations": evaluations}

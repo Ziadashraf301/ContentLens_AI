@@ -32,36 +32,18 @@ AGENT_MAP = {
 
 def parallel_batch_executor(state: AgentState) -> dict:
     """
-    Executes a batch of agents concurrently.
-    
-    This node looks at the current batch in parallel_batches and executes
-    all agents in that batch simultaneously, merging results back into state.
-    
-    Args:
-        state: Current AgentState with parallel_batches and current_batch_index
-    
-    Returns:
-        Updated state with all agent results merged
+    Executes a batch of agents concurrently without modifying graph state unnecessarily.
     """
     batches = state.get("parallel_batches", [])
     batch_index = state.get("current_batch_index", 0)
     
-    # Initialize parallel batches on first run if not present
-    if not batches and batch_index == 0:
-        logger.warning("Parallel executor: No batches found in state")
-        return {"current_batch_index": 0}
-    
     # Check if we've completed all batches
     if batch_index >= len(batches):
         logger.info("Parallel executor: All batches completed")
-        return {"current_batch_index": batch_index}
+        return {}
     
     current_batch = batches[batch_index]
     logger.info(f"Parallel executor: Executing batch {batch_index + 1}/{len(batches)} -> {current_batch}")
-    
-    # Ensure extracted_text exists
-    if not state.get("extracted_text"):
-        state["extracted_text"] = state.get("raw_text", "")
     
     # If single agent in batch, execute it directly
     if len(current_batch) == 1:
@@ -69,31 +51,24 @@ def parallel_batch_executor(state: AgentState) -> dict:
         logger.info(f"Parallel executor: Single agent in batch, executing {agent_name} sequentially")
         result = _execute_agent(agent_name, state)
         
-        # Update batch index for next iteration
-        return {
-            **result,
-            "current_batch_index": batch_index + 1
-        }
+        # Increment batch index and return results
+        state["current_batch_index"] = batch_index + 1
+        return result
     
     # Multiple agents in batch - execute in parallel
     logger.info(f"Parallel executor: Executing {len(current_batch)} agents in parallel")
     results = _execute_batch_parallel(current_batch, state)
     
-    # Merge all results into state
-    merged_state = {**state}
-    for agent_name, agent_result in results.items():
-        merged_state[agent_name] = agent_result
-    
-    # Increment batch index for next iteration
-    merged_state["current_batch_index"] = batch_index + 1
+    # Increment batch index
+    state["current_batch_index"] = batch_index + 1
     
     logger.info(f"Parallel executor: Batch {batch_index + 1} completed, moving to next batch")
-    return merged_state
+    return results
 
 
 def _execute_agent(agent_name: str, state: AgentState) -> dict:
     """
-    Execute a single agent and return its output.
+    Execute a single agent with its correct signature and return its output.
     """
     try:
         agent_class = AGENT_MAP.get(agent_name)
@@ -104,18 +79,46 @@ def _execute_agent(agent_name: str, state: AgentState) -> dict:
         agent = agent_class()
         
         # Get the appropriate input for the agent
-        extracted_text = state.get("extracted_text") or state.get("raw_text", "")
+        extracted_text = state.get("extraction", state.get("raw_text", ""))
+        user_request = state.get("user_request", "")
         
-        # Execute the agent with extracted text
         logger.info(f"Parallel executor: Running agent '{agent_name}'")
-        output = agent.run(content=extracted_text)
         
-        # Store output with agent name as key
-        return {f"{agent_name}_output": output}
+        # Call agent with its specific signature
+        if agent_name == "summarize":
+            output = agent.run(extraction_data=extracted_text)
+        elif agent_name == "translate":
+            output = agent.run(content=extracted_text, source_lang=state.get("source_lang"))
+        elif agent_name == "analyze":
+            output = agent.run(content=extracted_text)
+        elif agent_name == "recommend":
+            output = agent.run(content=extracted_text, user_request=user_request)
+        elif agent_name == "ideate":
+            output = agent.run(content=extracted_text)
+        elif agent_name == "copywrite":
+            output = agent.run(brief=extracted_text, user_request=user_request)
+        elif agent_name == "compliance":
+            output = agent.run(content=extracted_text)
+        else:
+            logger.error(f"No handler for agent: {agent_name}")
+            return {}
+        
+        # Store output with agent name as key (matches state field names)
+        state_key = {
+            "summarize": "summary",
+            "translate": "translation",
+            "analyze": "analysis",
+            "recommend": "recommendation",
+            "ideate": "ideation",
+            "copywrite": "copywriting",
+            "compliance": "compliance"
+        }.get(agent_name, f"{agent_name}_output")
+        
+        return {state_key: output}
     
     except Exception as e:
         logger.error(f"Error executing agent '{agent_name}': {str(e)}")
-        return {f"{agent_name}_output": {"error": str(e)}}
+        return {}
 
 
 def _execute_batch_parallel(batch: list, state: AgentState) -> dict:

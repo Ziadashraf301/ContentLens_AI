@@ -32,8 +32,8 @@ def create_graph():
     workflow.add_edge("node_extract", "node_refine")
     workflow.add_edge("node_refine", "node_router")
 
-    # Conditional routing from router
-    # Use distinct channel names to avoid collisions with node names
+    # Conditional routing from router - PARALLEL EXECUTION
+    # All agents in the same batch are executed in parallel, then return to router
     workflow.add_conditional_edges(
         "node_router",
         routing_logic,
@@ -49,7 +49,7 @@ def create_graph():
         }
     )
 
-    # After each task, go back to router to check for next task
+    # After each task, go back to router to check for next batch of parallel tasks
     workflow.add_edge("node_summarize", "node_router")
     workflow.add_edge("node_translate", "node_router")
     workflow.add_edge("node_analyze", "node_router")

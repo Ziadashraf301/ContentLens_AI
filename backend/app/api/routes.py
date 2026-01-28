@@ -33,7 +33,7 @@ async def process_document(
         
         logger.info(f"API: Received file {file.filename}. Request: {user_request}")
 
-        # Convert extract_only to bool and trigger the workflow
+        # Trigger the workflow
         result = await run_document_workflow(file_path, user_request)
 
         if "error" in result and not result.get("extraction"):

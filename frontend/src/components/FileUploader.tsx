@@ -31,7 +31,7 @@ export const FileUploader: React.FC<Props> = ({
         type="file"
         onChange={handleFileChange}
         disabled={loading}
-        accept=".pdf,.doc,.docx,.txt"
+        accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.gif"
       />
 
       {(phase === 'uploading' || phase === 'processing') && (

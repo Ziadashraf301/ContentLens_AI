@@ -5,16 +5,33 @@ from ..models.state.state import AgentState
 
 
 def router_node(state: AgentState):
+    """
+    Routes the request to determine which agents should handle it.
+    
+    In the parallel execution model, this node:
+    1. Calls RouterAgent to determine which agents are needed
+    2. Returns a list of agents in next_steps
+    3. The parallel_agents_node will execute all of them concurrently
+    
+    No longer uses routing_logic() for sequential conditional routing.
+    """
     if not state.get("next_steps"):
         agent = RouterAgent()
         decisions = agent.decide(state["user_request"])
-        return {"next_steps": decisions, "current_step_index": 0}
-    return {}
-
-
-def routing_logic(state: AgentState):
-    """
-    Routes to the next task in the list, or END if all done.
+        
+        logger.info(
+            f"🔀 Router: Identified {len(decisions)} agents to execute in parallel: {decisions}"
+        )
+        
+        return {
+            "next_steps": decisions,
+            "pending_agents": decisions,
+            "current_step_index": 0,
+            "agent_outputs": {},
+            "agent_metadata": {},
+            "agent_errors": {},
+            "agent_evaluations": {},
+        }
     This function returns a *channel name* (which the graph maps to a node),
     so we prefix task names with 'to_' to avoid collisions with node names.
     """

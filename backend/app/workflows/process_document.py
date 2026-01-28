@@ -5,6 +5,74 @@ from ..tools.language import detect_language
 from ..tools.validators import BriefValidator
 from ..core.langfuse import get_langfuse_callback, get_langfuse_tracer
 from langfuse import propagate_attributes
+from typing import Any, Dict
+
+
+def _extract_agent_output(value: Any) -> str:
+    """
+    Extract string output from potentially nested agent output structures.
+    
+    Handles both:
+    - Direct string values (from nodes)
+    - AgentOutput dict objects (from parallel execution)
+    - None values
+    """
+    if value is None:
+        return ""
+    
+    # If it's already a string, return as-is
+    if isinstance(value, str):
+        return value
+    
+    # If it's a dict (AgentOutput), extract the 'output' field
+    if isinstance(value, dict):
+        # Check if it's an AgentOutput dict with 'output' field
+        if "output" in value:
+            output = value["output"]
+            # Recursively handle if nested
+            return _extract_agent_output(output)
+        # Otherwise return str representation
+        return str(value)
+    
+    # For any other type, convert to string
+    return str(value)
+
+
+def _clean_response_state(state: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Clean the state to ensure all response fields are properly formatted strings.
+    
+    Extracts actual outputs from AgentOutput objects and ensures no nested
+    dicts are returned for string fields.
+    """
+    cleaned = state.copy()
+    
+    # List of fields that should be strings in the response
+    string_fields = [
+        "summary", "analysis", "recommendation", "ideation", 
+        "copywriting", "translation"
+    ]
+    
+    for field in string_fields:
+        if field in cleaned:
+            cleaned[field] = _extract_agent_output(cleaned[field])
+    
+    # Handle compliance specially (it can be a dict)
+    if "compliance" in cleaned:
+        value = cleaned["compliance"]
+        if isinstance(value, dict) and "output" in value:
+            # It's an AgentOutput, extract output
+            cleaned["compliance"] = value["output"]
+    
+    # Remove internal structures that shouldn't be in API response
+    internal_fields = [
+        "agent_outputs", "agent_metadata", "agent_errors", 
+        "agent_evaluations", "pending_agents"
+    ]
+    for field in internal_fields:
+        cleaned.pop(field, None)
+    
+    return cleaned
 
 
 async def run_document_workflow(file_path: str, user_request: str):
@@ -98,13 +166,13 @@ async def run_document_workflow(file_path: str, user_request: str):
                     output={
                         "raw_text": str(final_state.get("raw_text", "")),
                         "extraction": str(final_state.get("extraction", "")),
-                        "summary": str(final_state.get("summary", "")),
-                        "analysis": str(final_state.get("analysis", "")),
-                        "recommendation": str(final_state.get("recommendation", "")),
-                        "ideation": str(final_state.get("ideation", "")),
-                        "copywriting": str(final_state.get("copywriting", "")),
-                        "compliance": str(final_state.get("compliance", "")),
-                        "translation": str(final_state.get("translation", "")),
+                        "summary": _extract_agent_output(final_state.get("summary", "")),
+                        "analysis": _extract_agent_output(final_state.get("analysis", "")),
+                        "recommendation": _extract_agent_output(final_state.get("recommendation", "")),
+                        "ideation": _extract_agent_output(final_state.get("ideation", "")),
+                        "copywriting": _extract_agent_output(final_state.get("copywriting", "")),
+                        "compliance": _extract_agent_output(final_state.get("compliance", "")),
+                        "translation": _extract_agent_output(final_state.get("translation", "")),
                         "completed_steps": final_state.get("next_steps", []),
                         "status": "success"
                     }
@@ -115,6 +183,9 @@ async def run_document_workflow(file_path: str, user_request: str):
                 # Get trace ID from the span
                 trace_id = trace.trace_id if hasattr(trace, 'trace_id') else None
                 final_state["trace_id"] = trace_id
+                
+                # Clean up response to ensure all fields are properly serialized
+                final_state = _clean_response_state(final_state)
                 
                 return final_state
 

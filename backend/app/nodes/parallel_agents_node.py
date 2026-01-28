@@ -40,6 +40,7 @@ async def execute_agent_with_tracing(
     agent_name: str,
     state: AgentState,
     trace_client,
+    parent_observation = None,
 ) -> AgentOutput:
     """
     Execute a single agent asynchronously with Langfuse tracing.
@@ -48,6 +49,7 @@ async def execute_agent_with_tracing(
         agent_name: Name of the agent (e.g., "analyze")
         state: Current state (immutable during concurrent execution)
         trace_client: Langfuse client for tracing
+        parent_observation: Parent observation for nested tracing
     
     Returns:
         AgentOutput with metadata and result
@@ -66,16 +68,32 @@ async def execute_agent_with_tracing(
     span = None
     if trace_client:
         try:
-            span = trace_client.span(
-                name=f"agent_{agent_name}",
-                input={"agent_id": agent_id, "user_request": state.get("user_request")},
-                metadata={
-                    "agent_name": agent_name,
-                    "agent_id": agent_id,
-                    "execution_mode": "parallel",
-                }
-            )
-            metadata["langfuse_trace_id"] = span.id if hasattr(span, 'id') else str(span)
+            # Use start_as_current_observation for Langfuse 3.x
+            if parent_observation:
+                # Create as child observation of parent
+                span = parent_observation.start_as_current_observation(
+                    as_type="span",
+                    name=f"agent_{agent_name}",
+                    input={"agent_id": agent_id, "user_request": state.get("user_request")},
+                    metadata={
+                        "agent_name": agent_name,
+                        "agent_id": agent_id,
+                        "execution_mode": "parallel",
+                    }
+                )
+            else:
+                # Create as root observation (fallback)
+                span = trace_client.start_as_current_observation(
+                    as_type="span",
+                    name=f"agent_{agent_name}",
+                    input={"agent_id": agent_id, "user_request": state.get("user_request")},
+                    metadata={
+                        "agent_name": agent_name,
+                        "agent_id": agent_id,
+                        "execution_mode": "parallel",
+                    }
+                )
+            metadata["langfuse_trace_id"] = span.trace_id if hasattr(span, 'trace_id') else str(span)
         except Exception as trace_error:
             logger.warning(f"[{agent_id}] Failed to create Langfuse span: {trace_error}")
     
@@ -115,6 +133,7 @@ async def execute_agent_with_tracing(
                     output={"status": "success", "duration_ms": duration_ms},
                     metadata={"agent_id": agent_id}
                 )
+                span.__exit__(None, None, None)  # Close the observation context
             except Exception as trace_error:
                 logger.warning(f"[{agent_id}] Failed to update Langfuse span: {trace_error}")
         
@@ -161,6 +180,7 @@ async def execute_agent_with_tracing(
                     metadata={"agent_id": agent_id},
                     level="error"
                 )
+                span.__exit__(None, None, None)  # Close the observation context
             except Exception as trace_error:
                 logger.warning(f"[{agent_id}] Failed to update Langfuse span with error: {trace_error}")
         
@@ -184,6 +204,7 @@ async def parallel_agents_node(state: AgentState) -> AgentState:
     3. Merges results while preserving per-agent metadata
     4. Handles errors gracefully (one agent failure doesn't stop others)
     5. Maintains Langfuse tracing at both parallel node and per-agent level
+    6. Preserves trace hierarchy: each parallel agent is a child of the parallel node
     
     Args:
         state: AgentState with next_steps populated by router
@@ -206,9 +227,10 @@ async def parallel_agents_node(state: AgentState) -> AgentState:
     
     # Create parallel execution span in Langfuse
     parallel_span = None
-    if trace_client:
-        try:
-            parallel_span = trace_client.span(
+    try:
+        if trace_client:
+            parallel_span = trace_client.start_as_current_observation(
+                as_type="span",
                 name="parallel_agents_execution",
                 input={
                     "agents": agents_to_run,
@@ -220,13 +242,14 @@ async def parallel_agents_node(state: AgentState) -> AgentState:
                     "execution_mode": "parallel_concurrent",
                 }
             )
-        except Exception as trace_error:
-            logger.warning(f"Failed to create Langfuse parallel span: {trace_error}")
+    except Exception as trace_error:
+        logger.warning(f"Failed to create Langfuse parallel span: {trace_error}")
     
     try:
         # Create async tasks for all agents
+        # Pass parent_observation to create trace hierarchy
         tasks = [
-            execute_agent_with_tracing(agent_name, state, trace_client)
+            execute_agent_with_tracing(agent_name, state, trace_client, parallel_span)
             for agent_name in agents_to_run
         ]
         
@@ -309,6 +332,7 @@ async def parallel_agents_node(state: AgentState) -> AgentState:
                         "failed_agents": list(agent_errors.keys()),
                     }
                 )
+                parallel_span.__exit__(None, None, None)  # Close the observation context
             except Exception as trace_error:
                 logger.warning(f"Failed to update Langfuse parallel span: {trace_error}")
         
@@ -344,6 +368,7 @@ async def parallel_agents_node(state: AgentState) -> AgentState:
                     output={"error": str(error)},
                     level="error"
                 )
+                parallel_span.__exit__(None, None, None)  # Close the observation context
             except Exception as trace_error:
                 logger.warning(f"Failed to update Langfuse span on error: {trace_error}")
         

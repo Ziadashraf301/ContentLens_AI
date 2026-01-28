@@ -32,9 +32,7 @@ def router_node(state: AgentState):
             "agent_errors": {},
             "agent_evaluations": {},
         }
-    This function returns a *channel name* (which the graph maps to a node),
-    so we prefix task names with 'to_' to avoid collisions with node names.
-    """
+
     steps = state.get("next_steps", [])
     index = state.get("current_step_index", 0)
 

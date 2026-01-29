@@ -3,7 +3,8 @@ from ..models.state.state import AgentState
 from ..agents.ideation import IdeationAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
- 
+from ..core.config import settings
+
 def ideation_node(state: AgentState):
     logger.info("--- NODE: IDEATION ---")
 
@@ -18,8 +19,10 @@ def ideation_node(state: AgentState):
             logger.warning("Ideation output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('ideation', input_content, ideas)
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('ideation', input_content, ideas)
         
         return {
                 "ideation": ideas,

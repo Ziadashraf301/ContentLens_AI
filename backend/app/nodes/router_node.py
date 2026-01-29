@@ -3,7 +3,7 @@ from langgraph.types import Send
 from ..agents.router import RouterAgent
 from ..core.logging import logger
 from ..models.state.state import AgentState
-
+from langgraph.types import Command
 
 def router_node(state: AgentState):
     """
@@ -33,10 +33,9 @@ def router_node(state: AgentState):
         # Create Send objects for parallel execution
         sends = [Send(task_to_node[task], state) for task in decisions if task in task_to_node]
         
-        from langgraph.types import Command
         return Command(
         update={"next_steps": decisions},
-        goto=sends  # This triggers parallel execution
+        goto=sends  
         )
     
     except Exception as e:

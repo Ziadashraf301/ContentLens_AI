@@ -5,42 +5,62 @@ from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
 from ..core.config import settings
 
-def extraction_node(state: AgentState):
+from ..core.logging import logger
+from ..models.state.state import AgentState
+from ..agents.extractor import ExtractorAgent
+from ..utils.output_validator import OutputValidator
+from ..agents.judge import JudgeAgent
+from ..core.config import settings
+from langchain_cohere import ChatCohere
+
+async def extraction_node(state: AgentState):
     logger.info("--- NODE: EXTRACTION ---")
-
+    agent = ExtractorAgent()
+    source = "failed"
+    extraction_response = None
     try:
-        agent = ExtractorAgent()
-
-        # The raw_text comes from the FileLoader in the workflow
-        result = agent.run(state["raw_text"])
-        
-        # Validate output
-        code_valid = OutputValidator.validate_agent_output('extraction', result)
-        if not code_valid:
-            logger.warning("Extraction output validation failed")
-        
-        evaluation = None
-        
-        # LLM Judge evaluation
-        if settings.EVALUATION:
-            judge = JudgeAgent()
-            evaluation = judge.evaluate('extraction', state["raw_text"], str(result))
-
-        return {
-            "extraction": result,
-            "evaluations": [evaluation],
-            "errors": []
-        }
-    
+        extraction_response = await agent.run(state["raw_text"])
+        extraction_text = extraction_response if not hasattr(extraction_response, 'content') else extraction_response.content
+        source = "local_ollama"
     except Exception as e:
-        # Only catches catastrophic failures (agent init, etc.)
-        logger.error(f"Extraction node catastrophic error: {str(e)}")
-        return {
-            "extraction": "Extraction node failed completely.",
-            "evaluations": [{
-                "score": 0,
-                "reasoning": f"Node-level failure: {str(e)}",
-                "agent_type": "extraction"
-            }],
-            "errors": [f"Extraction node failed: {str(e)}"]
-        }
+        logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
+        try:
+            fallback_llm = ChatCohere(
+                cohere_api_key=settings.COHERE_API_KEY,
+                model="command-r-plus"
+            )
+            fallback_chain = agent.prompt | fallback_llm
+            rescue_response = await fallback_chain.ainvoke({"text": state["raw_text"]})
+            extraction_text = rescue_response.content
+            source = "cloud_cohere_fallback"
+            logger.info("Successfully recovered extraction using Cohere.")
+        except Exception as cohere_error:
+            logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
+            return {
+                "extraction": "Extraction node failed completely.",
+                "evaluations": [{
+                    "score": 0,
+                    "reasoning": "Both local (Ollama) and cloud (Cohere) providers are offline.",
+                    "agent_type": "extraction"
+                }],
+                "errors": [f"Ollama error: {e}", f"Cohere error: {cohere_error}"]
+            }
+
+    code_valid = OutputValidator.validate_agent_output('extraction', extraction_text)
+    if not code_valid:
+        logger.warning(f"Extraction output from {source} validation failed strict formatting")
+
+    evaluation = None
+    if settings.EVALUATION:
+        judge = JudgeAgent()
+        evaluation = await judge.evaluate('extraction', state["raw_text"], str(extraction_text))
+
+    input_tokens = getattr(extraction_response, 'response_metadata', {}).get('prompt_eval_count', 0) if extraction_response else 0
+    output_tokens = getattr(extraction_response, 'response_metadata', {}).get('eval_count', 0) if extraction_response else 0
+
+    return {
+        "extraction": extraction_text,
+        "evaluations": [evaluation] if evaluation else [],
+        "errors": [],
+        "metadata": {"source": source, "input_tokens": input_tokens, "output_tokens": output_tokens}
+    }

@@ -5,7 +5,7 @@ from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
 from ..core.config import settings
 
-def compliance_node(state: AgentState):
+async def compliance_node(state: AgentState):
     logger.info("--- NODE: COMPLIANCE ---")
     
     try:
@@ -13,7 +13,7 @@ def compliance_node(state: AgentState):
 
         # Check the copywriting first if present, else the summary or extraction
         to_check = str(state.get("extraction", "")) or state.get("raw_text") or ""
-        compliance_report = agent.run(to_check)
+        compliance_report = await agent.run(to_check)
         
         # Validate output
         code_valid = OutputValidator.validate_agent_output('compliance', compliance_report)
@@ -24,7 +24,7 @@ def compliance_node(state: AgentState):
         evaluation = None
         if settings.EVALUATION:
             judge = JudgeAgent()
-            evaluation = judge.evaluate('compliance', to_check, str(compliance_report))
+            evaluation = await judge.evaluate('compliance', to_check, str(compliance_report))
         
         return {
             "compliance": compliance_report,

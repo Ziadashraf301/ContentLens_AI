@@ -33,7 +33,11 @@ def router_node(state: AgentState):
         # Create Send objects for parallel execution
         sends = [Send(task_to_node[task], state) for task in decisions if task in task_to_node]
         
-        return {"next_steps": decisions, "__send__": sends}
+        from langgraph.types import Command
+        return Command(
+        update={"next_steps": decisions},
+        goto=sends  # This triggers parallel execution
+        )
     
     except Exception as e:
         logger.error(f"Router Node Error: {e}")

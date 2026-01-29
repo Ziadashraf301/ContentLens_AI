@@ -38,3 +38,7 @@ def router_node(state: AgentState):
             "next_steps": decisions,
             **{Send: sends}
         }
+    
+    except Exception as e:
+        logger.error(f"Router Node Error: {e}")
+        return {}

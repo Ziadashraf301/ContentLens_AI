@@ -2,7 +2,7 @@ from langgraph.graph import StateGraph, END
 from ..models.state.state import AgentState
 from ..nodes.extraction_node import extraction_node
 from ..nodes.refiner_node import refiner_node
-from ..nodes.router_node import router_node, routing_logic
+from ..nodes.router_node import router_node
 from ..nodes.summarization_node import summarization_node
 from ..nodes.translation_node import translation_node
 from ..nodes.analysis_node import analysis_node
@@ -15,7 +15,7 @@ from ..nodes.compliance_node import compliance_node
 def create_graph():
     workflow = StateGraph(AgentState)
 
-    # Add nodes (use distinct node names to avoid collision with channels)
+    # Add nodes
     workflow.add_node("node_extract", extraction_node)
     workflow.add_node("node_refine", refiner_node)
     workflow.add_node("node_router", router_node)
@@ -27,36 +27,23 @@ def create_graph():
     workflow.add_node("node_copywrite", copywriter_node)
     workflow.add_node("node_compliance", compliance_node)
 
-    # Entry point
+    # Sequential pipeline
     workflow.set_entry_point("node_extract")
     workflow.add_edge("node_extract", "node_refine")
     workflow.add_edge("node_refine", "node_router")
 
-    # Conditional routing from router
-    # Use distinct channel names to avoid collisions with node names
-    workflow.add_conditional_edges(
-        "node_router",
-        routing_logic,
-        {
-            "to_summarize": "node_summarize",
-            "to_translate": "node_translate",
-            "to_analyze": "node_analyze",
-            "to_recommend": "node_recommend",
-            "to_ideate": "node_ideate",
-            "to_copywrite": "node_copywrite",
-            "to_compliance": "node_compliance",
-            "end": END
-        }
-    )
 
-    # After each task, go back to router to check for next task
-    workflow.add_edge("node_summarize", "node_router")
-    workflow.add_edge("node_translate", "node_router")
-    workflow.add_edge("node_analyze", "node_router")
-    workflow.add_edge("node_recommend", "node_router")
-    workflow.add_edge("node_ideate", "node_router")
-    workflow.add_edge("node_copywrite", "node_router")
-    workflow.add_edge("node_compliance", "node_router")
+    # All parallel tasks end directly
+    workflow.add_edge("node_summarize", END)
+    workflow.add_edge("node_translate", END)
+    workflow.add_edge("node_analyze", END)
+    workflow.add_edge("node_recommend", END)
+    workflow.add_edge("node_ideate", END)
+    workflow.add_edge("node_copywrite", END)
+    workflow.add_edge("node_compliance", END)
+    
+    # Router can also end if no tasks
+    workflow.add_edge("node_router", END)
 
     return workflow.compile()
 

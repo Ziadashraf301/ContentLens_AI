@@ -1,16 +1,19 @@
 from langchain_community.llms import Ollama
 from langchain_core.prompts import PromptTemplate
+from ..models.schemas.EvaluationOutput import EvaluationOutput
 from ..core.config import settings
 from ..core.logging import logger
 from ..core.langfuse import trace_agent_execution
+from langchain_core.output_parsers import JsonOutputParser
 
 class JudgeAgent:
     def __init__(self):
         self.llm = Ollama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_JUDGE,
-            temperature=settings.TEMPERATURE_JUDGE
-        )
+            temperature=settings.TEMPERATURE_JUDGE)
+        
+        self.parser = JsonOutputParser(pydantic_object=EvaluationOutput)
 
         self.template = """
         SYSTEM:
@@ -30,12 +33,20 @@ class JudgeAgent:
 
         Provide your evaluation in this format:
         SCORE: [1-10]
-        REASONING: [brief explanation]
+        REASONING: [Brief explanation justifying the score, explicitly referencing the evaluation criteria]
+
+        CONSTRAINTS:
+        - Output MUST be strictly valid JSON.
+        - Do not include any conversational filler.
+        - Score must be an integer from 1 to 10.
+
+        {format_instructions}
         """
 
         self.prompt = PromptTemplate(
             input_variables=["agent_type", "input_context", "output"],
-            template=self.template
+            template=self.template,
+            partial_variables={"format_instructions": self.parser.get_format_instructions()}
         )
 
     @trace_agent_execution("judgement", settings.OLLAMA_MODEL_JUDGE)
@@ -47,7 +58,7 @@ class JudgeAgent:
         try:
             logger.info(f"Judge: Evaluating {agent_type} output...")
 
-            chain = self.prompt | self.llm
+            chain = self.prompt | self.llm | self.parser
 
             response = chain.invoke({
                 "agent_type": agent_type,
@@ -55,27 +66,13 @@ class JudgeAgent:
                 "output": str(output)
             })
 
-            # Parse the response
-            response_text = response.strip()
-            lines = response_text.split('\n')
+            logger.info(f"Judge: {agent_type} scored {response.score}/10")
+            
+            score = max(1, min(10, response.get("score", 5)))
 
-            score = 5  # default
-            reasoning = "Evaluation failed to parse"
-
-            for line in lines:
-                if line.startswith('SCORE:'):
-                    try:
-                        score = int(line.split(':', 1)[1].strip())
-                        score = max(1, min(10, score))  # clamp to 1-10
-                    except:
-                        pass
-                elif line.startswith('REASONING:'):
-                    reasoning = line.split(':', 1)[1].strip()
-
-            logger.info(f"Judge: {agent_type} scored {score}/10")
             return {
                 "score": score,
-                "reasoning": reasoning,
+                "reasoning": response.get("reasoning", "No reasoning provided"),
                 "agent_type": agent_type
             }
 

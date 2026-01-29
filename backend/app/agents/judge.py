@@ -66,13 +66,15 @@ class JudgeAgent:
                 "output": str(output)
             })
 
-            logger.info(f"Judge: {agent_type} scored {response.score}/10")
+            parsed_response = self.parser.parse(response)  
+            logger.info(f"Judge: {agent_type} scored {parsed_response.score}/10")
             
-            score = max(1, min(10, response.get("score", 5)))
-
+            score = max(1, min(10, parsed_response.score))
+            reasoning = parsed_response.reasoning
+            
             return {
                 "score": score,
-                "reasoning": response.get("reasoning", "No reasoning provided"),
+                "reasoning": reasoning,
                 "agent_type": agent_type
             }
 

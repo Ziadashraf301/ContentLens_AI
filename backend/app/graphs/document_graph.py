@@ -34,18 +34,14 @@ def create_graph():
 
 
     # All parallel tasks end directly
-    for node in [
-        "node_summarize",
-        "node_translate",
-        "node_analyze",
-        "node_recommend",
-        "node_ideate",
-        "node_copywrite",
-        "node_compliance"]:
-        
-        workflow.add_edge("node_router", node)
-        workflow.add_edge(node, END)
-        
+    workflow.add_edge("node_summarize", END)
+    workflow.add_edge("node_translate", END)
+    workflow.add_edge("node_analyze", END)
+    workflow.add_edge("node_recommend", END)
+    workflow.add_edge("node_ideate", END)
+    workflow.add_edge("node_copywrite", END)
+    workflow.add_edge("node_compliance", END)
+    
     # Router can also end if no tasks
     workflow.add_edge("node_router", END)
 

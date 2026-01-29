@@ -12,7 +12,6 @@ def router_node(state: AgentState):
 
     try:
         if state.get("next_steps"):
-            # Already routed, skip
             return {}
         
         agent = RouterAgent()
@@ -34,10 +33,7 @@ def router_node(state: AgentState):
         # Create Send objects for parallel execution
         sends = [Send(task_to_node[task], state) for task in decisions if task in task_to_node]
         
-        return {
-            "next_steps": decisions,
-            "send": sends if sends else []
-        }
+        return {"next_steps": decisions, "__send__": sends}
     
     except Exception as e:
         logger.error(f"Router Node Error: {e}")

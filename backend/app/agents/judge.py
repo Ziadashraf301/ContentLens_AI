@@ -60,20 +60,18 @@ class JudgeAgent:
 
             chain = self.prompt | self.llm | self.parser
 
-            parsed_response: EvaluationOutput = chain.invoke({
+            result  = chain.invoke({
                 "agent_type": agent_type,
                 "input_context": input_context,
                 "output": str(output)
             })
 
-            logger.info(f"Judge: {agent_type} scored {parsed_response.score}/10")
+            logger.info(f"Judge: {agent_type} scored {result['score']}/10")
             
-            score = max(1, min(10, parsed_response.score))
-            reasoning = parsed_response.reasoning
             
             return {
-                "score": score,
-                "reasoning": reasoning,
+                "score": result.get("score", 5),
+                "reasoning": result.get("reasoning", ""),
                 "agent_type": agent_type
             }
 

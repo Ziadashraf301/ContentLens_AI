@@ -36,7 +36,7 @@ def router_node(state: AgentState):
         
         return {
             "next_steps": decisions,
-            **{Send: sends}
+            "send": sends if sends else []
         }
     
     except Exception as e:

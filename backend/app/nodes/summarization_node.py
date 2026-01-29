@@ -3,6 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.summarizer import SummarizerAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
+from ..core.config import settings
 
 def summarization_node(state: AgentState):
     logger.info("--- NODE: SUMMARIZATION ---")
@@ -16,8 +17,10 @@ def summarization_node(state: AgentState):
             logger.warning("Summary output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('summary', str(state["extraction"]), summary)
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('summary', str(state["extraction"]), summary)
         
         return {
             "summary": summary,

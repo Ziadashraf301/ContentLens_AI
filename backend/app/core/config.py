@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     MAX_FILE_SIZE_MB: int = 20
     ALLOWED_EXTENSIONS: str = "pdf,docx,txt,png,jpg,jpeg,gif"
 
+    # Evaluation
+    EVALUATION: bool = True
+
     class Config:
         env_file = ".env"
         case_sensitive = True

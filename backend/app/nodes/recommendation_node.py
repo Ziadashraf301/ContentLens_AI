@@ -3,7 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.recommender import RecommenderAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
-
+from ..core.config import settings
 
 def recommendation_node(state: AgentState):
     logger.info("--- NODE: RECOMMENDATION ---")
@@ -20,8 +20,10 @@ def recommendation_node(state: AgentState):
             logger.warning("Recommendation output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('recommendation', input_content + " | " + user_request, recommendations)
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('recommendation', input_content + " | " + user_request, recommendations)
         
         return {
                 "recommendation": recommendations,

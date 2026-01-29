@@ -3,6 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.translator import TranslatorAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
+from ..core.config import settings
 
 def translation_node(state: AgentState):
     logger.info("--- NODE: TRANSLATION ---")
@@ -18,8 +19,10 @@ def translation_node(state: AgentState):
             logger.warning("Translation output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('translation', text_to_translate, translation)
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('translation', text_to_translate, translation)
         
         return {
             "translation": translation,

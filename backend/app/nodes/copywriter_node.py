@@ -3,6 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.copywriter import CopywriterAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
+from ..core.config import settings
 
 def copywriter_node(state: AgentState):
     logger.info("--- NODE: COPYWRITER ---")
@@ -21,8 +22,10 @@ def copywriter_node(state: AgentState):
             logger.warning("Copywriter output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('copywriter', brief + " | " + user_request, copy)
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('copywriter', brief + " | " + user_request, copy)
         
         return {
                 "copywriting": copy,

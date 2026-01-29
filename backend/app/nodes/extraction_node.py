@@ -3,7 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.extractor import ExtractorAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
-
+from ..core.config import settings
 
 def extraction_node(state: AgentState):
     logger.info("--- NODE: EXTRACTION ---")
@@ -19,9 +19,12 @@ def extraction_node(state: AgentState):
         if not code_valid:
             logger.warning("Extraction output validation failed")
         
+        evaluation = None
+        
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('extraction', state["raw_text"], str(result))
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('extraction', state["raw_text"], str(result))
 
         return {
             "extraction": result,

@@ -3,6 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.analyzer import AnalyzerAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
+from ..core.config import settings
 
 def analysis_node(state: AgentState):
     logger.info("--- NODE: ANALYSIS ---")
@@ -18,8 +19,10 @@ def analysis_node(state: AgentState):
             logger.warning("Analysis output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('analysis', str(state["extraction"]), analysis_result)
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('analysis', str(state["extraction"]), analysis_result)
         
         return {
                 "analysis": analysis_result,

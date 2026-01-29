@@ -3,7 +3,7 @@ from ..models.state.state import AgentState
 from ..agents.compliance import ComplianceAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
-
+from ..core.config import settings
 
 def compliance_node(state: AgentState):
     logger.info("--- NODE: COMPLIANCE ---")
@@ -21,8 +21,10 @@ def compliance_node(state: AgentState):
             logger.warning("Compliance output validation failed")
         
         # LLM Judge evaluation
-        judge = JudgeAgent()
-        evaluation = judge.evaluate('compliance', to_check, str(compliance_report))
+        evaluation = None
+        if settings.EVALUATION:
+            judge = JudgeAgent()
+            evaluation = judge.evaluate('compliance', to_check, str(compliance_report))
         
         return {
             "compliance": compliance_report,

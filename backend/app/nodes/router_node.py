@@ -1,29 +1,40 @@
 
+from langgraph.types import Send
 from ..agents.router import RouterAgent
 from ..core.logging import logger
 from ..models.state.state import AgentState
 
 
 def router_node(state: AgentState):
-    logger.info("--- NODE: ROUTER ---")
+    """
+    Router fans out to ALL tasks in parallel using Send API
+    """
+
     try:
-        if not state.get("next_steps"):
-            agent = RouterAgent()
-            decisions = agent.decide(state["user_request"])
-            return {
-                "next_steps": decisions,
-                "evaluations": [],
-                "errors": []
-                    }
-    except Exception as e:
-        # Only catches catastrophic failures (agent init, etc.)
-        logger.error(f"Router node catastrophic error: {str(e)}")
+        if state.get("next_steps"):
+            # Already routed, skip
+            return {}
+        
+        agent = RouterAgent()
+        decisions = agent.decide(state["user_request"])
+        
+        logger.info(f"Router: Fanning out to {len(decisions)} tasks in parallel: {decisions}")
+        
+        # Map task names to node names
+        task_to_node = {
+            "summarize": "node_summarize",
+            "translate": "node_translate",
+            "analyze": "node_analyze",
+            "recommend": "node_recommend",
+            "ideate": "node_ideate",
+            "copywrite": "node_copywrite",
+            "compliance": "node_compliance",
+        }
+        
+        # Create Send objects for parallel execution
+        sends = [Send(task_to_node[task], state) for task in decisions if task in task_to_node]
+        
         return {
-            "next_steps": [],
-            "evaluations": [{
-                "score": 0,
-                "reasoning": f"Node-level failure: {str(e)}",
-                "agent_type": "router"
-            }],
-            "errors": [f"Router node failed: {str(e)}"]
+            "next_steps": decisions,
+            **{Send: sends}
         }

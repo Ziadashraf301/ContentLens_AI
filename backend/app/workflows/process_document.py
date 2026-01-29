@@ -74,7 +74,8 @@ async def run_document_workflow(file_path: str, user_request: str):
                     "raw_text": clean_text,
                     "user_request": user_request,
                     "source_lang": source_lang,
-                    "errors": []
+                    "errors": [],  
+                    "evaluations": []
                 }
 
                 # Execute the Brain (LangGraph)
@@ -96,15 +97,29 @@ async def run_document_workflow(file_path: str, user_request: str):
                 # Set trace-level output explicitly
                 trace.update_trace(
                     output={
-                        "raw_text": str(final_state.get("raw_text", "")),
+                        "raw_text": str(final_state.get("raw_text", "")),  
                         "extraction": str(final_state.get("extraction", "")),
                         "summary": str(final_state.get("summary", "")),
                         "analysis": str(final_state.get("analysis", "")),
                         "recommendation": str(final_state.get("recommendation", "")),
                         "ideation": str(final_state.get("ideation", "")),
                         "copywriting": str(final_state.get("copywriting", "")),
-                        "compliance": str(final_state.get("compliance", "")),
                         "translation": str(final_state.get("translation", "")),
+                        
+                        # Handle compliance report structure
+                        "compliance_status": final_state.get("compliance", {}).get("status", "unknown") if isinstance(final_state.get("compliance"), dict) else "unknown",
+                        "compliance_risk_score": final_state.get("compliance", {}).get("overall_risk_score", 0) if isinstance(final_state.get("compliance"), dict) else 0,
+                        "compliance_issues_count": final_state.get("compliance", {}).get("issue_count", 0) if isinstance(final_state.get("compliance"), dict) else 0,
+                        
+                        # Include evaluation scores from all agents
+                        "evaluations": final_state.get("evaluations", []),
+                        "evaluation_count": len(final_state.get("evaluations", [])),
+                        "average_score": sum(e.get("score", 0) for e in final_state.get("evaluations", [])) / len(final_state.get("evaluations", [])) if final_state.get("evaluations") else 0,
+                        
+                        # Include errors from parallel agents
+                        "errors": final_state.get("errors", []),
+                        "error_count": len(final_state.get("errors", [])),
+                        
                         "completed_steps": final_state.get("next_steps", []),
                         "status": "success"
                     }
@@ -121,6 +136,5 @@ async def run_document_workflow(file_path: str, user_request: str):
             except Exception as e:
                 logger.error(f"Workflow Critical Error: {str(e)}")
                 trace.score(name="workflow_success", value=0.0, comment=f"Error: {str(e)}", data_type="NUMERIC")
-                # Set trace output on error
                 trace.update_trace(output={"error": str(e), "status": "failed"})
                 return {"error": str(e)}

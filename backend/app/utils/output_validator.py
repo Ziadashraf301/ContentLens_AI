@@ -39,7 +39,7 @@ class OutputValidator:
         if not isinstance(output, str):
             return False
         
-        # More lenient validation - check for meaningful content
+        # Check for meaningful content
         if len(output.strip()) < 50:
             return False
             
@@ -117,23 +117,36 @@ class OutputValidator:
 
     @staticmethod
     def validate_compliance(output: Any) -> bool:
-        """Validate ComplianceAgent output used by compliance_node."""
-
-        # Compliance node ALWAYS returns structured dict
+        """Validate ComplianceAgent output (updated for v2.0.0)."""
+        
+        # Compliance now returns ComplianceReport dict
         if not isinstance(output, dict):
             return False
 
-        # Required schema from ComplianceAgent.run()
-        required_keys = {"status", "issues", "issue_count", "risk_score"}
-        if not required_keys.issubset(output):
+        # Required keys from new ComplianceReport structure
+        required_keys = {
+            "status", 
+            "overall_risk_score", 
+            "issues", 
+            "issue_count", 
+            "categories_flagged",
+            "summary",
+            "recommendations",
+            "checked_at",
+            "compliance_version"
+        }
+        
+        if not required_keys.issubset(output.keys()):
+            logger.warning(f"Compliance output missing required keys. Has: {output.keys()}")
             return False
 
-        # Status validation
+        # Status validation (new values)
         status = output.get("status")
-        if status not in {"ok", "review", "block"}:
+        if status not in {"approved", "rejected", "needs_review"}:
+            logger.warning(f"Invalid compliance status: {status}")
             return False
 
-        # Issues validation
+        # Issues validation (updated structure)
         issues = output.get("issues")
         if not isinstance(issues, list):
             return False
@@ -142,32 +155,91 @@ class OutputValidator:
             if not isinstance(issue, dict):
                 return False
 
-            if not {"severity", "match", "description"}.issubset(issue):
+            # Updated required fields
+            required_issue_keys = {
+                "severity", 
+                "category", 
+                "match", 
+                "description",
+                "context",
+                "position",
+                "requires_human_review"
+            }
+            
+            if not required_issue_keys.issubset(issue.keys()):
+                logger.warning(f"Issue missing required keys: {issue.keys()}")
                 return False
 
-            if issue["severity"] not in {"block", "review", "privacy"}:
+            # Validate severity (new values)
+            if issue["severity"] not in {"critical", "high", "medium", "low", "info"}:
+                logger.warning(f"Invalid severity: {issue['severity']}")
+                return False
+            
+            # Validate category
+            valid_categories = {
+                "legal", "privacy", "advertising_standards", 
+                "accessibility", "brand_safety", "age_restrictions",
+                "financial", "health"
+            }
+            if issue["category"] not in valid_categories:
+                logger.warning(f"Invalid category: {issue['category']}")
                 return False
 
+            # Validate types
             if not isinstance(issue["match"], str):
                 return False
-
             if not isinstance(issue["description"], str):
+                return False
+            if not isinstance(issue["context"], str):
+                return False
+            if not isinstance(issue["position"], int):
+                return False
+            if not isinstance(issue["requires_human_review"], bool):
                 return False
 
         # issue_count validation
         issue_count = output.get("issue_count")
-        if not isinstance(issue_count, int):
+        if not isinstance(issue_count, int) or issue_count < 0:
             return False
-
         if issue_count != len(issues):
+            logger.warning(f"Issue count mismatch: {issue_count} != {len(issues)}")
             return False
 
-        # risk_score validation
-        risk_score = output.get("risk_score")
+        # overall_risk_score validation (0-100 scale now)
+        risk_score = output.get("overall_risk_score")
         if not isinstance(risk_score, int):
             return False
+        if not (0 <= risk_score <= 100):
+            logger.warning(f"Risk score out of range: {risk_score}")
+            return False
 
-        if risk_score < 0:
+        # categories_flagged validation
+        categories_flagged = output.get("categories_flagged")
+        if not isinstance(categories_flagged, list):
+            return False
+        
+        # summary validation
+        summary = output.get("summary")
+        if not isinstance(summary, str) or len(summary) < 10:
+            logger.warning("Summary too short or invalid")
+            return False
+
+        # recommendations validation
+        recommendations = output.get("recommendations")
+        if not isinstance(recommendations, list):
+            return False
+        if not all(isinstance(r, str) for r in recommendations):
+            logger.warning("Invalid recommendation format")
+            return False
+
+        # checked_at validation (ISO format timestamp)
+        checked_at = output.get("checked_at")
+        if not isinstance(checked_at, str):
+            return False
+        
+        # compliance_version validation
+        compliance_version = output.get("compliance_version")
+        if not isinstance(compliance_version, str):
             return False
 
         return True

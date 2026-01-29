@@ -6,26 +6,36 @@ from ..agents.judge import JudgeAgent
  
 def ideation_node(state: AgentState):
     logger.info("--- NODE: IDEATION ---")
-    agent = IdeationAgent()
-    input_content = state.get("extraction") or state.get("raw_text") or ""
-    ideas = agent.run(input_content)
-    
-    # Validate output
-    code_valid = OutputValidator.validate_agent_output('ideation', ideas)
-    if not code_valid:
-        logger.warning("Ideation output validation failed")
-    
-    # LLM Judge evaluation
-    judge = JudgeAgent()
-    evaluation = judge.evaluate('ideation', input_content, ideas)
-    
-    # Add evaluation to list
-    evaluations = state.get("evaluations", [])
-    evaluations.append(evaluation)
 
-    current_index = state.get("current_step_index", 0)
-    return {
-        "ideation": ideas,
-        "current_step_index": current_index + 1,
-        "evaluations": evaluations
-    }
+    try:
+        agent = IdeationAgent()
+        input_content = state.get("extraction") or state.get("raw_text") or ""
+        ideas = agent.run(input_content)
+        
+        # Validate output
+        code_valid = OutputValidator.validate_agent_output('ideation', ideas)
+        if not code_valid:
+            logger.warning("Ideation output validation failed")
+        
+        # LLM Judge evaluation
+        judge = JudgeAgent()
+        evaluation = judge.evaluate('ideation', input_content, ideas)
+        
+        return {
+                "ideation": ideas,
+                "evaluations": [evaluation],
+                "errors": []
+                }
+    
+    except Exception as e:
+        # Only catches catastrophic failures (agent init, etc.)
+        logger.error(f"Ideation node catastrophic error: {str(e)}")
+        return {
+            "ideation": "Ideation node failed completely.",
+            "evaluations": [{
+                "score": 0,
+                "reasoning": f"Node-level failure: {str(e)}",
+                "agent_type": "ideation"
+            }],
+            "errors": [f"Ideation node failed: {str(e)}"]
+        }

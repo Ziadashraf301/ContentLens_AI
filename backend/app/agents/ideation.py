@@ -1,74 +1,86 @@
-from langchain_community.llms import Ollama
-from langchain_core.prompts import PromptTemplate
+from langchain_ollama import ChatOllama
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_cohere import ChatCohere
+from ..core.rate_limiter import ollama_gpu_limit
 from ..core.config import settings
 from ..core.logging import logger
 from ..core.langfuse import trace_agent_execution
 
 class IdeationAgent:
     def __init__(self):
-        self.llm = Ollama(
+        self.llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_IDEATION,
-            temperature=settings.TEMPERATURE_IDEATION
+            temperature=settings.TEMPERATURE_IDEATION,
+            num_predict=2048,
+            num_ctx=8192,
         )
-
-        self.template = """
-        SYSTEM:
-        You are a senior creative marketing strategist and copy lead known for generating campaign ideas that are both original and executable.
-
-        TASK:
-        Using the provided brief or extracted content, generate campaign ideas that align with the brand, audience, and objectives.
-
-        OUTPUT RULES:
-        - Provide exactly 5 campaign ideas, ordered by strategic impact.
-        - Each idea must include:
-        • A short, punchy title
-        • A one-sentence rationale explaining the strategic value
-        • Two concise execution bullets focused on channels or formats
-        - Keep ideas distinct from one another.
-        - Avoid generic concepts or buzzwords.
-        - Do not invent facts beyond the provided content.
-        - If the user request specifies a language (e.g., translate to Arabic), output the entire response in that language.
-
-        FORMAT (STRICT):
-        1. **Title** – Rationale sentence  
-        - Execution:
-            - Bullet 1
-            - Bullet 2
-        2. **Title** – Rationale sentence  
-        - Execution:
-            - Bullet 1
-            - Bullet 2
-        3. **Title** – Rationale sentence  
-        - Execution:
-            - Bullet 1
-            - Bullet 2
-        4. **Title** – Rationale sentence  
-        - Execution:
-            - Bullet 1
-            - Bullet 2
-        5. **Title** – Rationale sentence  
-        - Execution:
-            - Bullet 1
-            - Bullet 2
-
-        BRIEF / SOURCE:
-        {content}
-
-        CAMPAIGN IDEAS:
-        """
-
-        self.prompt = PromptTemplate(
-            input_variables=["content"],
-            template=self.template
-        )
+        self.prompt = ChatPromptTemplate.from_messages([
+            ("system", """
+            You are a senior creative marketing strategist and copy lead known for generating campaign ideas that are both original and executable.
+            TASK:
+            Using the provided brief or extracted content, generate campaign ideas that align with the brand, audience, and objectives.
+            OUTPUT RULES:
+            - Provide exactly 5 campaign ideas, ordered by strategic impact.
+            - Each idea must include:
+            • A short, punchy title
+            • A one-sentence rationale explaining the strategic value
+            • Two concise execution bullets focused on channels or formats
+            - Keep ideas distinct from one another.
+            - Avoid generic concepts or buzzwords.
+            - Do not invent facts beyond the provided content.
+            - If the user request specifies a language (e.g., translate to Arabic), output the entire response in that language.
+            FORMAT (STRICT):
+            1. **Title** – Rationale sentence
+            - Execution:
+                - Bullet 1
+                - Bullet 2
+            2. **Title** – Rationale sentence
+            - Execution:
+                - Bullet 1
+                - Bullet 2
+            3. **Title** – Rationale sentence
+            - Execution:
+                - Bullet 1
+                - Bullet 2
+            4. **Title** – Rationale sentence
+            - Execution:
+                - Bullet 1
+                - Bullet 2
+            5. **Title** – Rationale sentence
+            - Execution:
+                - Bullet 1
+                - Bullet 2
+            Do not include any conversational filler.
+            """),
+            ("human", "BRIEF / SOURCE:\n{content}\n\nCAMPAIGN IDEAS:")
+        ])
 
     @trace_agent_execution("ideation", settings.OLLAMA_MODEL_IDEATION)
-    def run(self, content: str):
-        try:
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True
+    )
+    async def run(self, content: str):
+        async with ollama_gpu_limit:
             logger.info("Agent: Ideation generating campaign ideas...")
-            chain = self.prompt | self.llm
-            return chain.invoke({"content": content})
-        except Exception as e:
-            logger.error(f"Ideation Error: {e}")
-            return "Ideation failed."
+            try:
+                chain = self.prompt | self.llm
+                response = await chain.ainvoke({"content": str(content)})
+                return response.content
+            except Exception as e:
+                logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
+                try:
+                    fallback_llm = ChatCohere(
+                        cohere_api_key=settings.COHERE_API_KEY,
+                        model="command-r-plus"
+                    )
+                    fallback_chain = self.prompt | fallback_llm
+                    rescue_response = await fallback_chain.ainvoke({"content": str(content)})
+                    return rescue_response.content
+                except Exception as cohere_error:
+                    logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
+                    return f"Ideation failed: Ollama error: {e}, Cohere error: {cohere_error}"

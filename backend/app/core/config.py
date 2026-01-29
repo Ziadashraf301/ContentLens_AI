@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     # Evaluation
     EVALUATION: bool = True
 
+    COHERE_API_KEY: Optional[str] = None
+
     class Config:
         env_file = ".env"
         case_sensitive = True

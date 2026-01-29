@@ -131,7 +131,7 @@ class ComplianceAgent:
         ),
     ]
 
-    def run(self, content: str) -> ComplianceReport:
+    async def run(self, content: str) -> ComplianceReport:
         """
         Perform comprehensive compliance check.
         Returns detailed report with context and remediation guidance.

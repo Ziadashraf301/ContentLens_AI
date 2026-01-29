@@ -1,58 +1,69 @@
-from langchain_community.llms import Ollama
-from langchain_core.prompts import PromptTemplate
+from langchain_ollama import ChatOllama
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from langchain_core.prompts import ChatPromptTemplate
+from ..core.rate_limiter import ollama_gpu_limit
 from ..core.config import settings
 from ..core.logging import logger
 from ..core.langfuse import trace_agent_execution
 
 class AnalyzerAgent:
     def __init__(self):
-        self.llm = Ollama(
+        self.llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_ANALYZER,
-            temperature=settings.TEMPERATURE_ANALYZER
+            temperature=settings.TEMPERATURE_ANALYZER,
+            num_predict=2048,
+            num_ctx=8192,
         )
         
-        self.template = """
-        SYSTEM:
-        You are a Senior Media Planner with strong experience reviewing briefs for strategic readiness and execution risk.
+        # Using ChatPromptTemplate to separate the Persona from the Data
+        self.prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are an elite Lead Strategic Consultant and Media Auditor. 
+            Your expertise lies in identifying structural gaps in advertising briefs and mitigating execution risks before they reach the market.
 
-        TASK:
-        Analyze the provided advertising brief and assess its completeness, strategic soundness, and potential risks.
+            OUTPUT RULES:
+            - Base your analysis strictly on the provided content.
+            - Do not assume missing details; explicitly flag them.
+            - Keep insights concise, practical, and decision-oriented.
+            - Do not include any conversational filler or introductory phrases.
 
-        OUTPUT RULES:
-        - Base your analysis strictly on the provided content.
-        - Do not assume missing details; explicitly flag them.
-        - Keep insights concise, practical, and decision-oriented.
-        - Do not include any conversational filler or "Here is the anaylsis".
+            FORMAT (STRICT):
+            1. Missing or Unclear Information:
+            - Bullet list of missing, vague, or ambiguous elements.
 
-        FORMAT (STRICT):
-        1. Missing or Unclear Information:
-        - Bullet list of missing, vague, or ambiguous elements.
+            2. Strategic Recommendations:
+            - Exactly 3 recommendations, ordered by impact.
+            - Each recommendation should be concise and actionable.
 
-        2. Strategic Recommendations:
-        - Exactly 3 recommendations, ordered by impact.
-        - Each recommendation should be concise and actionable.
-
-        3. Potential Risks:
-        - Bullet list of key risks that could affect performance or delivery.
-
-        BRIEF DATA:
-        {content}
-
-        STRATEGIC ANALYSIS:
-        """
-        
-        self.prompt = PromptTemplate(
-            input_variables=["content"],
-            template=self.template
-        )
+            3. Potential Risks:
+            - Bullet list of key risks that could affect performance or delivery."""),
+            
+            ("human", "BRIEF DATA:\n{content}\n\nSTRATEGIC ANALYSIS:")
+        ])
 
     @trace_agent_execution("analysis", settings.OLLAMA_MODEL_ANALYZER)
-    def run(self, content: str):
-        try:
+    @retry(
+        stop=stop_after_attempt(3), 
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception_type(Exception),
+        reraise=True
+    )
+    async def run(self, content: str):
+        async with ollama_gpu_limit:
             logger.info("Agent: Analyzer performing strategic review...")
+                
+            # Chain definition
             chain = self.prompt | self.llm
-            return chain.invoke({"content": str(content)})
-        except Exception as e:
-            logger.error(f"Analyzer Error: {e}")
-            return "Strategic analysis failed."
+                
+            # ChatOllama returns an AIMessage object
+            response = await chain.ainvoke({"content": str(content)})
+                
+            # Extract metadata from the AIMessage object
+            metadata = response.response_metadata
+            input_tokens = metadata.get('prompt_eval_count', 0)
+            output_tokens = metadata.get('eval_count', 0)
+                
+            logger.info(f"Analyzer tokens: input={input_tokens}, output={output_tokens}")
+                
+            # Return the text content directly
+            return response

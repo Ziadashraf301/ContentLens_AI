@@ -45,40 +45,21 @@ class ExtractorAgent:
     @trace_agent_execution("extraction", settings.OLLAMA_MODEL_EXTRACTOR)
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
+        wait=wait_exponential(multiplier=1, min=2, max=40),
         retry=retry_if_exception_type(Exception),
         reraise=True
     )
     async def run(self, text: str):
         async with ollama_gpu_limit:
             logger.info("Agent: Extractor parsing document...")
-            try:
-                chain = self.prompt | self.llm
-                response = await chain.ainvoke({"text": str(text)})
-                metadata = response.response_metadata
-                input_tokens = metadata.get('prompt_eval_count', 0)
-                output_tokens = metadata.get('eval_count', 0)
-                logger.info(f"Extractor tokens: input={input_tokens}, output={output_tokens}")
-                try:
-                    return self.parser.parse(response.content)
-                except Exception as parse_error:
-                    logger.warning(f"Failed to parse JSON: {parse_error}")
-                    return response.content
-            except Exception as e:
-                logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
-                try:
-                    fallback_llm = ChatCohere(
-                        cohere_api_key=settings.COHERE_API_KEY,
-                        model="command-r-plus"
-                    )
-                    fallback_chain = self.prompt | fallback_llm
-                    rescue_response = await fallback_chain.ainvoke({"text": str(text)})
-                    return self.parser.parse(rescue_response.content)
-                except Exception as cohere_error:
-                    logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
-                    return {
-                        "title": "Error",
-                        "summary": "Extraction failed",
-                        "key_points": [],
-                        "error_details": f"Ollama error: {e}, Cohere error: {cohere_error}"
-                    }
+            chain = self.prompt | self.llm
+            response = await chain.ainvoke({"text": str(text)})
+            metadata = response.response_metadata
+            
+            input_tokens = metadata.get('prompt_eval_count', 0)
+            output_tokens = metadata.get('eval_count', 0)
+            
+            logger.info(f"Extractor tokens: input={input_tokens}, output={output_tokens}")
+            
+            return self.parser.parse(response.content)
+            

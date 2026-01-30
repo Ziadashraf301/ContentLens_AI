@@ -37,7 +37,10 @@ async def extraction_node(state: AgentState):
         except Exception as cohere_error:
             logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
             return {
-                "extraction": "Extraction node failed completely.",
+                "extraction": {
+                    "status": "failed",
+                    "message": "Extraction node failed completely."
+                },
                 "evaluations": [{
                     "score": 0,
                     "reasoning": "Both local (Ollama) and cloud (Cohere) providers are offline.",

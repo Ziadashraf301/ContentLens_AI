@@ -52,7 +52,9 @@ class ExtractorAgent:
     async def run(self, text: str):
         async with ollama_gpu_limit:
             logger.info("Agent: Extractor parsing document...")
+
             chain = self.prompt | self.llm
+            
             response = await chain.ainvoke({"text": str(text)})
             metadata = response.response_metadata
             

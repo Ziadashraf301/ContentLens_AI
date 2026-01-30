@@ -9,15 +9,18 @@ from langchain_cohere import ChatCohere
 
 async def copywriter_node(state: AgentState):
     logger.info("--- NODE: COPYWRITER ---")
+
     brief = str(state.get("extraction", "")) or state.get("raw_text") or ""
     user_request = state.get("user_request", "")
     agent = CopywriterAgent()
     source = "failed"
     copy_response = None
+    
     try:
         copy_response = await agent.run(brief, user_request)
         copy_text = copy_response.content if hasattr(copy_response, 'content') else str(copy_response)
         source = "local_ollama"
+
     except Exception as e:
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
         try:
@@ -25,11 +28,14 @@ async def copywriter_node(state: AgentState):
                 cohere_api_key=settings.COHERE_API_KEY,
                 model="command-r-plus"
             )
+
             fallback_chain = agent.prompt | fallback_llm
             rescue_response = await fallback_chain.ainvoke({"brief": brief, "user_request": user_request})
+            
             copy_text = rescue_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered copywriting using Cohere.")
+
         except Exception as cohere_error:
             logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
             return {

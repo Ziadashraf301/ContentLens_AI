@@ -67,20 +67,9 @@ class IdeationAgent:
     async def run(self, content: str):
         async with ollama_gpu_limit:
             logger.info("Agent: Ideation generating campaign ideas...")
-            try:
-                chain = self.prompt | self.llm
-                response = await chain.ainvoke({"content": str(content)})
-                return response.content
-            except Exception as e:
-                logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
-                try:
-                    fallback_llm = ChatCohere(
-                        cohere_api_key=settings.COHERE_API_KEY,
-                        model="command-r-plus"
-                    )
-                    fallback_chain = self.prompt | fallback_llm
-                    rescue_response = await fallback_chain.ainvoke({"content": str(content)})
-                    return rescue_response.content
-                except Exception as cohere_error:
-                    logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
-                    return f"Ideation failed: Ollama error: {e}, Cohere error: {cohere_error}"
+            
+            chain = self.prompt | self.llm
+
+            response = await chain.ainvoke({"content": str(content)})
+            
+            return response

@@ -45,4 +45,5 @@ class RefinerAgent:
                 "extraction": str(extraction),
                 "user_request": user_request
             })
+            
             return response

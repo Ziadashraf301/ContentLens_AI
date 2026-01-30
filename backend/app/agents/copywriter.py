@@ -74,12 +74,4 @@ class CopywriterAgent:
             # ChatOllama returns an AIMessage object
             response = await chain.ainvoke({"brief": str(brief), "user_request": str(user_request)})
                 
-            # Extract metadata from the AIMessage object
-            metadata = response.response_metadata
-            input_tokens = metadata.get('prompt_eval_count', 0)
-            output_tokens = metadata.get('eval_count', 0)
-                
-            logger.info(f"Copywriter tokens: input={input_tokens}, output={output_tokens}")
-                
-            # Return the text content directly
             return response

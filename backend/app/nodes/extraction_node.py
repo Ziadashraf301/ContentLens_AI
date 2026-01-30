@@ -19,8 +19,7 @@ async def extraction_node(state: AgentState):
     source = "failed"
     extraction_response = None
     try:
-        extraction_response = await agent.run(state["raw_text"])
-        extraction_text = extraction_response if not hasattr(extraction_response, 'content') else extraction_response.content
+        extraction_text = await agent.run(state["raw_text"])
         source = "local_ollama"
     except Exception as e:
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
@@ -29,11 +28,11 @@ async def extraction_node(state: AgentState):
                 cohere_api_key=settings.COHERE_API_KEY,
                 model="command-r-plus"
             )
-            fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"text": state["raw_text"]})
-            extraction_text = rescue_response.content
+            fallback_chain = agent.prompt | fallback_llm | agent.parser
+            extraction_text = await fallback_chain.ainvoke({"text": state["raw_text"]})
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered extraction using Cohere.")
+
         except Exception as cohere_error:
             logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
             return {
@@ -58,12 +57,9 @@ async def extraction_node(state: AgentState):
         judge = JudgeAgent()
         evaluation = await judge.evaluate('extraction', state["raw_text"], str(extraction_text))
 
-    input_tokens = getattr(extraction_response, 'response_metadata', {}).get('prompt_eval_count', 0) if extraction_response else 0
-    output_tokens = getattr(extraction_response, 'response_metadata', {}).get('eval_count', 0) if extraction_response else 0
 
     return {
         "extraction": extraction_text,
         "evaluations": [evaluation] if evaluation else [],
-        "errors": [],
-        "metadata": {"source": source, "input_tokens": input_tokens, "output_tokens": output_tokens}
+        "errors": []
     }

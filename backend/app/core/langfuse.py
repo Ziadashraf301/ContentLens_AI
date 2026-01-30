@@ -66,8 +66,9 @@ def trace_agent_execution(agent_name: str, model_name: str):
                             # Execute the agent
                             result = await func(self, *args, **kwargs)
                             
+                            # Extract tokens (only if AIMessage)
                             usage = {}
-                            if hasattr(result, "response_metadata"): # If result is AIMessage
+                            if hasattr(result, "response_metadata"):
                                 meta = result.response_metadata
                                 usage = {
                                     "input": meta.get("prompt_eval_count", 0),
@@ -78,14 +79,23 @@ def trace_agent_execution(agent_name: str, model_name: str):
                             # Log the generation
                             output_text = result.content if hasattr(result, 'content') else str(result)
 
+                            # Get input for generation log
+                            gen_input = "Input unavailable"
+                            if hasattr(self, 'prompt') and len(args) > 0:
+                                try:
+                                    gen_input = str(self.prompt.format(**{k: args[0] for k in self.prompt.input_variables}))
+                                except:
+                                    gen_input = str(args[0])
+
+                            # Log generation
                             with trace_span.start_as_current_observation(
                                 as_type="generation",
                                 name=f"{agent_name}_llm_call",
                                 model=model_name,
-                                input=self.prompt.format(content=args[0]) if hasattr(self, 'prompt') else "No input",
+                                input=gen_input,
                                 output=output_text,
                                 metadata={"agent": agent_name},
-                                usage=usage
+                                usage=usage if usage else None
                             ):
                                 pass
 
@@ -106,7 +116,7 @@ def trace_agent_execution(agent_name: str, model_name: str):
                                 metadata={"end_time": time.time(), "success": True}
                             )
 
-                            return output_text
+                            return result
 
                         except Exception as e:
                             # Update execution span with error

@@ -94,8 +94,7 @@ def trace_agent_execution(agent_name: str, model_name: str):
                                 model=model_name,
                                 input=gen_input,
                                 output=output_text,
-                                metadata={"agent": agent_name},
-                                usage=usage if usage else None
+                                metadata={**{"agent": agent_name}, **usage}
                             ):
                                 pass
 

@@ -96,6 +96,9 @@ async def run_document_workflow(file_path: str, user_request: str):
                         graph_span.update(output={"final_state_keys": list(final_state.keys())})
 
                     # Set trace-level output explicitly
+                    # Create a safe getter
+                    compliance_data = final_state.get("compliance") or {}
+
                     trace.update_trace(
                         output={
                             "raw_text": str(final_state.get("raw_text", "")),  
@@ -108,9 +111,9 @@ async def run_document_workflow(file_path: str, user_request: str):
                             "translation": str(final_state.get("translation", "")),
                             
                             # Handle compliance report structure
-                            "compliance_status": final_state.get("compliance", {}).get("status", "unknown") if isinstance(final_state.get("compliance"), dict) else "unknown",
-                            "compliance_risk_score": final_state.get("compliance", {}).get("overall_risk_score", 0) if isinstance(final_state.get("compliance"), dict) else 0,
-                            "compliance_issues_count": final_state.get("compliance", {}).get("issue_count", 0) if isinstance(final_state.get("compliance"), dict) else 0,
+                            "compliance_status": compliance_data.get("status", "unknown"),
+                            "compliance_risk_score": compliance_data.get("overall_risk_score", 0),
+                            "compliance_issues_count": compliance_data.get("issue_count", 0),
                             
                             # Include evaluation scores from all agents
                             "evaluations": final_state.get("evaluations", []),

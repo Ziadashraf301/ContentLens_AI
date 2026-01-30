@@ -5,7 +5,7 @@ from ..core.logging import logger
 from ..models.state.state import AgentState
 from langgraph.types import Command
 
-def router_node(state: AgentState):
+async def router_node(state: AgentState):
     """
     Router fans out to ALL tasks in parallel using Send API
     """
@@ -15,7 +15,7 @@ def router_node(state: AgentState):
             return {}
         
         agent = RouterAgent()
-        decisions = agent.decide(state["user_request"])
+        decisions = await agent.decide(state["user_request"])
         
         logger.info(f"Router: Fanning out to {len(decisions)} tasks in parallel: {decisions}")
         

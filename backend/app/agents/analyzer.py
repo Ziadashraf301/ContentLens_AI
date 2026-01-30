@@ -58,12 +58,5 @@ class AnalyzerAgent:
             # ChatOllama returns an AIMessage object
             response = await chain.ainvoke({"content": str(content)})
                 
-            # Extract metadata from the AIMessage object
-            metadata = response.response_metadata
-            input_tokens = metadata.get('prompt_eval_count', 0)
-            output_tokens = metadata.get('eval_count', 0)
-                
-            logger.info(f"Analyzer tokens: input={input_tokens}, output={output_tokens}")
-                
-            # Return the text content directly
+            # Return the AI message object directly
             return response

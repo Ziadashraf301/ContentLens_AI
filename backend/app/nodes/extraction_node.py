@@ -57,9 +57,12 @@ async def extraction_node(state: AgentState):
         judge = JudgeAgent()
         evaluation = await judge.evaluate('extraction', state["raw_text"], str(extraction_text))
 
+    input_tokens = getattr(extraction_response, 'response_metadata', {}).get('prompt_eval_count', 0) if extraction_response else 0
+    output_tokens = getattr(extraction_response, 'response_metadata', {}).get('eval_count', 0) if extraction_response else 0
 
     return {
         "extraction": extraction_text,
         "evaluations": [evaluation] if evaluation else [],
-        "errors": []
+        "errors": [],
+        "metadata": {"source": source, "input_tokens": input_tokens, "output_tokens": output_tokens}
     }

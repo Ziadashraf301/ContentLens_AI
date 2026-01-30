@@ -65,8 +65,10 @@ async def analysis_node(state: AgentState):
     if settings.EVALUATION:
         judge = JudgeAgent()
         evaluation = await judge.evaluate('analysis', state["raw_text"], analysis_text)
+
     input_tokens = getattr(analysis_result, 'response_metadata', {}).get('prompt_eval_count', 0) if analysis_result else 0
     output_tokens = getattr(analysis_result, 'response_metadata', {}).get('eval_count', 0) if analysis_result else 0
+    
     return {
         "analysis": analysis_text,
         "evaluations": [evaluation] if evaluation else [],

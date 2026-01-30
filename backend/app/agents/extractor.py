@@ -56,12 +56,6 @@ class ExtractorAgent:
             chain = self.prompt | self.llm
             
             response = await chain.ainvoke({"text": str(text)})
-            metadata = response.response_metadata
-            
-            input_tokens = metadata.get('prompt_eval_count', 0)
-            output_tokens = metadata.get('eval_count', 0)
-            
-            logger.info(f"Extractor tokens: input={input_tokens}, output={output_tokens}")
             
             return self.parser.parse(response.content)
             

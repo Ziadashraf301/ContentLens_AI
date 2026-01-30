@@ -55,7 +55,9 @@ class RecommenderAgent:
     )
     async def run(self, content: str, user_request: str):
         async with ollama_gpu_limit:
+            
             logger.info("Agent: Recommender generating recommendations...")
             chain = self.prompt | self.llm
             response = await chain.ainvoke({"content": str(content), "user_request": user_request})
+
             return response

@@ -98,6 +98,12 @@ async def run_document_workflow(file_path: str, user_request: str):
                     # Set trace-level output explicitly
                     # Create a safe getter
                     compliance_data = final_state.get("compliance") or {}
+                    evaluations = final_state.get("evaluations", [])
+                    valid_evaluations = [e for e in evaluations if e and isinstance(e, dict)]  # Filter out None values
+                    average_score = (
+                        sum(e.get("score", 0) for e in valid_evaluations) / len(valid_evaluations)
+                        if valid_evaluations else 0
+                    )
 
                     trace.update_trace(
                         output={
@@ -116,9 +122,9 @@ async def run_document_workflow(file_path: str, user_request: str):
                             "compliance_issues_count": compliance_data.get("issue_count", 0),
                             
                             # Include evaluation scores from all agents
-                            "evaluations": final_state.get("evaluations", []),
-                            "evaluation_count": len(final_state.get("evaluations", [])),
-                            "average_score": sum(e.get("score", 0) for e in final_state.get("evaluations", [])) / len(final_state.get("evaluations", [])) if final_state.get("evaluations") else 0,
+                            "evaluations": valid_evaluations,
+                            "evaluation_count": len(valid_evaluations),
+                            "average_score": average_score,
                             
                             # Include errors from parallel agents
                             "errors": final_state.get("errors", []),

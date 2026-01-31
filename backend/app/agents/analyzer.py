@@ -34,6 +34,16 @@ class AnalyzerAgent:
             2. Strategic Recommendations:
             - Exactly 3 recommendations, ordered by impact.
             - Each recommendation should be concise and actionable.
+            FORMAT (STRICT):
+                1. Recommendation:
+                - Rationale:
+                - Next Step:
+                2. Recommendation:
+                - Rationale:
+                - Next Step:
+                3. Recommendation:
+                - Rationale:
+                - Next Step:
 
             3. Potential Risks:
             - Bullet list of key risks that could affect performance or delivery."""),

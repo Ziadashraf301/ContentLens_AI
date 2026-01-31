@@ -49,9 +49,7 @@ class JudgeAgent:
     @trace_agent_execution("judgement", settings.OLLAMA_MODEL_JUDGE)
     @retry(
         stop=stop_after_attempt(3), 
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        retry=retry_if_exception_type(Exception),
-        reraise=False
+        wait=wait_exponential(multiplier=1, min=2, max=10)
     )
     async def evaluate(self, agent_type: str, input_context: str, output: str) -> dict:
         """

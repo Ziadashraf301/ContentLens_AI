@@ -12,8 +12,8 @@ class CopywriterAgent:
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_COPYWRITER,
             temperature=settings.TEMPERATURE_COPYWRITER,
-            num_predict=512,
-            num_ctx=2072,
+            num_predict=1024,
+            num_ctx=3072,
         )
         
         # Using ChatPromptTemplate to separate the Persona from the Data

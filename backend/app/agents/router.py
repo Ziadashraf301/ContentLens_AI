@@ -12,8 +12,8 @@ class RouterAgent:
         self.llm = ChatOllama(
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_ROUTER,
-            num_predict=2048,
-            num_ctx=8192,
+            num_predict=512,
+            num_ctx=2072,
             temperature=0, # Router should be deterministic (not creative)
         )
         self.prompt = ChatPromptTemplate.from_messages([

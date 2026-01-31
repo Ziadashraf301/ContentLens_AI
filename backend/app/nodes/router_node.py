@@ -24,7 +24,7 @@ async def router_node(state: AgentState):
             "summarize": "node_summarize",
             "translate": "node_translate",
             "analyze": "node_analyze",
-            "recommend": "node_recommend",
+            # "recommend": "node_recommend",
             "ideate": "node_ideate",
             "copywrite": "node_copywrite",
             "compliance": "node_compliance",

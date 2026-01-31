@@ -30,9 +30,9 @@ async def copywriter_node(state: AgentState):
             )
 
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"brief": brief})
+            copy_response = await fallback_chain.ainvoke({"brief": brief})
             
-            copy_text = rescue_response.content
+            copy_text = copy_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered copywriting using Cohere.")
 

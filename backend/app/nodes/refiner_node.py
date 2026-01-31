@@ -24,8 +24,8 @@ async def refiner_node(state: AgentState):
             )
 
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"extraction": str(state["extraction"]), "user_request": state["user_request"]})
-            refined_text = rescue_response.content
+            refined_response = await fallback_chain.ainvoke({"extraction": str(state["extraction"]), "user_request": state["user_request"]})
+            refined_text = refined_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered refinement using Cohere.")
         except Exception as cohere_error:

@@ -42,9 +42,7 @@ class SummarizerAgent:
     @trace_agent_execution("summary", settings.OLLAMA_MODEL_SUMMARIZER)
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        retry=retry_if_exception_type(Exception),
-        reraise=False
+        wait=wait_exponential(multiplier=1, min=2, max=10)
     )
     async def run(self, extraction_data: dict):
         async with ollama_gpu_limit:

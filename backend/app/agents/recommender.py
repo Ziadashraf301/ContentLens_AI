@@ -49,9 +49,7 @@ class RecommenderAgent:
     @trace_agent_execution("recommendation", settings.OLLAMA_MODEL_RECOMMENDER)
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        retry=retry_if_exception_type(Exception),
-        reraise=False
+        wait=wait_exponential(multiplier=1, min=2, max=10)
     )
     async def run(self, content: str, user_request: str):
         async with ollama_gpu_limit:

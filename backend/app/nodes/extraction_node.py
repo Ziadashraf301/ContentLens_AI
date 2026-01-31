@@ -24,7 +24,7 @@ async def extraction_node(state: AgentState):
                 temperature=settings.TEMPERATURE_EXTRACTOR
             )
 
-            fallback_chain = agent.prompt | fallback_llm | agent.parser
+            fallback_chain = agent.prompt | fallback_llm
             extraction_response = await fallback_chain.ainvoke({"text": state["raw_text"]})
             extraction_text = agent.parser.parse(extraction_response.content) if hasattr(extraction_response, 'content') else str(extraction_response)
             source = "cloud_cohere_fallback"

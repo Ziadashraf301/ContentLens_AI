@@ -13,8 +13,8 @@ class RefinerAgent:
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_REFINER,
             temperature=settings.TEMPERATURE_REFINER,
-            num_predict=2048,
-            num_ctx=8192,
+            num_predict=512,
+            num_ctx=2072,
         )
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """

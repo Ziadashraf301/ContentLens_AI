@@ -13,8 +13,8 @@ class IdeationAgent:
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_IDEATION,
             temperature=settings.TEMPERATURE_IDEATION,
-            num_predict=800,
-            num_ctx=2000,
+            num_predict=512,
+            num_ctx=2072,
         )
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", """

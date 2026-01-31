@@ -20,6 +20,7 @@ async def extraction_node(state: AgentState):
     extraction_response = None
     try:
         extraction_text = await agent.run(state["raw_text"])
+        extraction_text = extraction_text.content if hasattr(extraction_text, 'content') else str(extraction_text)
         source = "local_ollama"
     except Exception as e:
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")

@@ -2,7 +2,6 @@ from langchain_ollama import ChatOllama
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_cohere import ChatCohere
 from ..core.config import settings
 from ..core.logging import logger
 from ..core.langfuse import trace_agent_execution
@@ -14,8 +13,8 @@ class ExtractorAgent:
             base_url=settings.OLLAMA_BASE_URL,
             model=settings.OLLAMA_MODEL_EXTRACTOR,
             temperature=settings.TEMPERATURE_EXTRACTOR,
-            num_predict=2048,
-            num_ctx=8192,
+            num_predict=512,
+            num_ctx=2072,
             format="json"
         )
         self.parser = JsonOutputParser()
@@ -57,5 +56,5 @@ class ExtractorAgent:
             
             response = await chain.ainvoke({"text": str(text)})
             
-            return self.parser.parse(response.content)
+            return response
             

@@ -12,10 +12,10 @@ async def analysis_node(state: AgentState):
     
     analysis_text = ""
     source = "failed"
+    agent = AnalyzerAgent()
 
     try:
         # PRIMARY: Try Local Ollama
-        agent = AnalyzerAgent()
         analysis_result = await agent.run(input_content)
         analysis_text = analysis_result.content if hasattr(analysis_result, 'content') else str(analysis_result)
         source = "local_ollama"
@@ -32,7 +32,6 @@ async def analysis_node(state: AgentState):
             )
             
             # Reuse the agent's prompt template
-            agent = AnalyzerAgent() 
             fallback_chain = agent.prompt | fallback_llm
 
             # Rescue Call

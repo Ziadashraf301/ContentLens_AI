@@ -11,13 +11,12 @@ async def copywriter_node(state: AgentState):
     logger.info("--- NODE: COPYWRITER ---")
 
     brief = str(state.get("extraction", "")) or state.get("raw_text") or ""
-    user_request = state.get("user_request", "")
     agent = CopywriterAgent()
     source = "failed"
     copy_response = None
     
     try:
-        copy_response = await agent.run(brief, user_request)
+        copy_response = await agent.run(brief)
         copy_text = copy_response.content if hasattr(copy_response, 'content') else str(copy_response)
         source = "local_ollama"
 
@@ -30,7 +29,7 @@ async def copywriter_node(state: AgentState):
             )
 
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"brief": brief, "user_request": user_request})
+            rescue_response = await fallback_chain.ainvoke({"brief": brief})
             
             copy_text = rescue_response.content
             source = "cloud_cohere_fallback"
@@ -57,7 +56,7 @@ async def copywriter_node(state: AgentState):
     evaluation = None
     if settings.EVALUATION:
         judge = JudgeAgent()
-        evaluation = await judge.evaluate('copywriter', brief + " | " + user_request, copy_text)
+        evaluation = await judge.evaluate('copywriter', brief, copy_text)
 
     # Extract token counts if available
     input_tokens = getattr(copy_response, 'response_metadata', {}).get('prompt_eval_count', 0) if copy_response else 0

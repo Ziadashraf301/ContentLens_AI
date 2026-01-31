@@ -54,7 +54,7 @@ class CopywriterAgent:
 
             Do not include any conversational filler or "Here is the content"."""),
             
-            ("human", "BRIEF:\n{brief}\n\nUSER REQUEST:\n{user_request}\n\nCOPY VARIANTS:")
+            ("human", "BRIEF:\n{brief}\n\nUSER REQUEST:\n\nCOPY VARIANTS:")
         ])
 
     @trace_agent_execution("copywriter", settings.OLLAMA_MODEL_COPYWRITER)
@@ -64,7 +64,7 @@ class CopywriterAgent:
         retry=retry_if_exception_type(Exception),
         reraise=True
     )
-    async def run(self, brief: str, user_request: str):
+    async def run(self, brief: str):
         async with ollama_gpu_limit:
             logger.info("Agent: Copywriter creating variants...")
                 
@@ -72,6 +72,6 @@ class CopywriterAgent:
             chain = self.prompt | self.llm
                 
             # ChatOllama returns an AIMessage object
-            response = await chain.ainvoke({"brief": str(brief), "user_request": str(user_request)})
+            response = await chain.ainvoke({"brief": str(brief)})
                 
             return response

@@ -4,13 +4,6 @@ from ..agents.extractor import ExtractorAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
 from ..core.config import settings
-
-from ..core.logging import logger
-from ..models.state.state import AgentState
-from ..agents.extractor import ExtractorAgent
-from ..utils.output_validator import OutputValidator
-from ..agents.judge import JudgeAgent
-from ..core.config import settings
 from langchain_cohere import ChatCohere
 
 async def extraction_node(state: AgentState):
@@ -19,8 +12,8 @@ async def extraction_node(state: AgentState):
     source = "failed"
     extraction_response = None
     try:
-        extraction_text = await agent.run(state["raw_text"])
-        extraction_text = extraction_text.content if hasattr(extraction_text, 'content') else str(extraction_text)
+        extraction_response = await agent.run(state["raw_text"])
+        extraction_text = agent.parser.parse(extraction_response.content) if hasattr(extraction_response, 'content') else str(extraction_response)
         source = "local_ollama"
     except Exception as e:
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")

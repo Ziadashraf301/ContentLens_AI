@@ -28,7 +28,8 @@ async def analysis_node(state: AgentState):
             # Initialize Fallback
             fallback_llm = ChatCohere(
                 cohere_api_key=settings.COHERE_API_KEY, 
-                model="command-r-plus"
+                model=settings.COHERE_MODEL, 
+                temperature=settings.TEMPERATURE_ANALYZER
             )
             
             # Reuse the agent's prompt template

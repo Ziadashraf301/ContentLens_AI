@@ -19,9 +19,11 @@ async def extraction_node(state: AgentState):
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
         try:
             fallback_llm = ChatCohere(
-                cohere_api_key=settings.COHERE_API_KEY,
-                model="command-r-plus"
+                cohere_api_key=settings.COHERE_API_KEY, 
+                model=settings.COHERE_MODEL, 
+                temperature=settings.TEMPERATURE_EXTRACTOR
             )
+
             fallback_chain = agent.prompt | fallback_llm | agent.parser
             extraction_text = await fallback_chain.ainvoke({"text": state["raw_text"]})
             source = "cloud_cohere_fallback"

@@ -3,12 +3,6 @@ from ..models.state.state import AgentState
 from ..agents.refiner import RefinerAgent
 from ..agents.judge import JudgeAgent
 from ..core.config import settings
-
-from ..core.logging import logger
-from ..models.state.state import AgentState
-from ..agents.refiner import RefinerAgent
-from ..agents.judge import JudgeAgent
-from ..core.config import settings
 from langchain_cohere import ChatCohere
 
 async def refiner_node(state: AgentState):
@@ -24,9 +18,11 @@ async def refiner_node(state: AgentState):
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
         try:
             fallback_llm = ChatCohere(
-                cohere_api_key=settings.COHERE_API_KEY,
-                model="command-r-plus"
+                cohere_api_key=settings.COHERE_API_KEY, 
+                model=settings.COHERE_MODEL, 
+                temperature=settings.TEMPERATURE_REFINER
             )
+
             fallback_chain = agent.prompt | fallback_llm
             rescue_response = await fallback_chain.ainvoke({"extraction": str(state["extraction"]), "user_request": state["user_request"]})
             refined_text = rescue_response.content

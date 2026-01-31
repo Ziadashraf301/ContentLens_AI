@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     EVALUATION: bool = True
 
     COHERE_API_KEY: Optional[str] = None
+    COHERE_MODEL: str = 'command-a-03-2025'
 
     class Config:
         env_file = ".env"

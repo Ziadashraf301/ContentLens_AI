@@ -24,8 +24,9 @@ async def copywriter_node(state: AgentState):
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
         try:
             fallback_llm = ChatCohere(
-                cohere_api_key=settings.COHERE_API_KEY,
-                model="command-r-plus"
+                cohere_api_key=settings.COHERE_API_KEY, 
+                model=settings.COHERE_MODEL, 
+                temperature=settings.TEMPERATURE_COPYWRITER
             )
 
             fallback_chain = agent.prompt | fallback_llm

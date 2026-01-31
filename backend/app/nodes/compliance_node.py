@@ -21,14 +21,16 @@ async def compliance_node(state: AgentState):
             logger.warning("Compliance output validation failed")
         
         # LLM Judge evaluation
-        evaluation = None
+        evaluations = []  # Changed: start with empty list
         if settings.EVALUATION:
             judge = JudgeAgent()
             evaluation = await judge.evaluate('compliance', to_check, str(compliance_report))
+            if evaluation:  # Only add if not None
+                evaluations.append(evaluation)
         
         return {
             "compliance": compliance_report,
-            "evaluations": [evaluation],
+            "evaluations": evaluations,  # Changed: now always a list of valid evaluations
             "errors": []
         }
         
@@ -47,10 +49,6 @@ async def compliance_node(state: AgentState):
                 "checked_at": "",
                 "compliance_version": "2.0.0"
             },
-            "evaluations": [{
-                "score": 0,
-                "reasoning": f"Node-level failure: {str(e)}",
-                "agent_type": "compliance"
-            }],
+            "evaluations": [],  # Changed: empty list instead of a list with None
             "errors": [f"Compliance node failed: {str(e)}"]
         }

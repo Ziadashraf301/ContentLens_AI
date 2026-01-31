@@ -36,8 +36,8 @@ async def analysis_node(state: AgentState):
             fallback_chain = agent.prompt | fallback_llm
 
             # Rescue Call
-            rescue_response = await fallback_chain.ainvoke({"content": input_content})
-            analysis_text = rescue_response.content
+            analysis_result = await fallback_chain.ainvoke({"content": input_content})
+            analysis_text = analysis_result.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered analysis using Cohere.")
 

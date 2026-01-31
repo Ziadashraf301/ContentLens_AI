@@ -26,8 +26,8 @@ async def ideation_node(state: AgentState):
             )
 
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"content": input_content})
-            ideas_text = rescue_response.content
+            ideas_response = await fallback_chain.ainvoke({"content": input_content})
+            ideas_text = ideas_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered ideation using Cohere.")
         except Exception as cohere_error:

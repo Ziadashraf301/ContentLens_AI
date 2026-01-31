@@ -25,17 +25,20 @@ async def translation_node(state: AgentState):
         source = "local_ollama"
     except Exception as e:
         logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
+        
         try:
             fallback_llm = ChatCohere(
                 cohere_api_key=settings.COHERE_API_KEY, 
                 model=settings.COHERE_MODEL, 
                 temperature=settings.TEMPERATURE_TRANSLATOR
             )
+
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"content": text_to_translate})
-            translation_text = rescue_response.content
+            translation_response = await fallback_chain.ainvoke({"content": text_to_translate})
+            translation_text = translation_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered translation using Cohere.")
+
         except Exception as cohere_error:
             logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
             return {

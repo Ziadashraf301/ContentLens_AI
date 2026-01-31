@@ -31,8 +31,8 @@ async def summarization_node(state: AgentState):
                 temperature=settings.TEMPERATURE_SUMMARIZER
             )
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"extraction_data": str(state["extraction"])})
-            summary_text = rescue_response.content
+            summary_response = await fallback_chain.ainvoke({"extraction_data": str(state["extraction"])})
+            summary_text = summary_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered summary using Cohere.")
         except Exception as cohere_error:

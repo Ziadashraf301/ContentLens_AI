@@ -34,8 +34,8 @@ async def recommendation_node(state: AgentState):
             )
 
             fallback_chain = agent.prompt | fallback_llm
-            rescue_response = await fallback_chain.ainvoke({"content": input_content, "user_request": user_request})
-            recommendations_text = rescue_response.content
+            recommendations_response = await fallback_chain.ainvoke({"content": input_content, "user_request": user_request})
+            recommendations_text = recommendations_response.content
             source = "cloud_cohere_fallback"
             logger.info("Successfully recovered recommendations using Cohere.")
         except Exception as cohere_error:

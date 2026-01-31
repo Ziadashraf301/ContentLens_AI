@@ -39,7 +39,7 @@ async def process_document(
         
         with propagate_attributes(tags=["api", "document_processing", "production"]):
             with tracer.client.start_as_current_observation(
-                as_type="trace",  # This is the root trace
+                as_type="span",  # This is the root trace
                 name="api_document_processing",
                 input={
                     "filename": file.filename,

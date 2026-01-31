@@ -4,18 +4,39 @@ from ..agents.router import RouterAgent
 from ..core.logging import logger
 from ..models.state.state import AgentState
 from langgraph.types import Command
+from ..core.config import settings
+from langchain_cohere import ChatCohere
 
 async def router_node(state: AgentState):
     """
     Router fans out to ALL tasks in parallel using Send API
     """
 
-    try:
-        if state.get("next_steps"):
-            return {}
+    if state.get("next_steps"):
+        return {}
         
-        agent = RouterAgent()
+    agent = RouterAgent()
+
+    try: 
         decisions = await agent.decide(state["user_request"])
+    except Exception as e:
+        logger.warning(f"Ollama failed permanently. Attempting Cohere fallback... Error: {e}")
+
+        try:
+            fallback_llm = ChatCohere(
+                cohere_api_key=settings.COHERE_API_KEY, 
+                model=settings.COHERE_MODEL, 
+                temperature=settings.TEMPERATURE_ROUTER
+            )
+
+            fallback_chain = agent.prompt | fallback_llm
+            rescue_response = await fallback_chain.ainvoke({"user_request": state["user_request"]})
+            decisions = rescue_response.content.split(", ")
+            logger.info("Successfully recovered routing decisions using Cohere.")
+
+        except Exception as cohere_error:
+            logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
+            return {}
         
         logger.info(f"Router: Fanning out to {len(decisions)} tasks in parallel: {decisions}")
         
@@ -35,9 +56,4 @@ async def router_node(state: AgentState):
         
         return Command(
         update={"next_steps": decisions},
-        goto=sends  
-        )
-    
-    except Exception as e:
-        logger.error(f"Router Node Error: {e}")
-        return {}
+        goto=sends  )

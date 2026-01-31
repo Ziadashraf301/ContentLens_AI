@@ -7,12 +7,15 @@ from ..core.langfuse import get_langfuse_callback, get_langfuse_tracer
 from langfuse import propagate_attributes
 from ..core.rate_limiter import request_limit
 
-async def run_document_workflow(file_path: str, user_request: str):
+async def run_document_workflow(file_path: str, user_request: str, tracer=None):
     """
     Orchestrates the pre-processing and execution of the AI Graph.
     """
     async with request_limit:
-        tracer = get_langfuse_tracer()
+        # Use the passed tracer (from API) or create a new one as fallback
+        if tracer is None:
+            tracer = get_langfuse_tracer()
+            logger.warning("Tracer not provided to workflow, creating new one")
         
         # Use propagate_attributes for tags, then start the trace
         with propagate_attributes(tags=["workflow", "document_processing", "production"]):

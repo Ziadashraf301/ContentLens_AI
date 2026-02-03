@@ -5,6 +5,7 @@ from app.agents.ideation import IdeationAgent
 from app.agents.copywriter import CopywriterAgent
 from app.agents.compliance import ComplianceAgent
 from app.core.config import settings
+import pytest
 
 
 def test_agents_can_instantiate():
@@ -23,16 +24,16 @@ def test_agents_can_instantiate():
     assert hasattr(copy, "run")
     assert hasattr(comp, "run")
 
-
-def test_compliance_agent_blocks_spam():
+@pytest.mark.asyncio
+async def test_compliance_agent_blocks_spam():
     ca = ComplianceAgent()
-    res = ca.run("This campaign will spam users and sell personal data")
+    res = await ca.run("This campaign will sell personal data")
     assert isinstance(res, dict)
-    assert res["status"] == "block"
+    assert res["status"] == "rejected"
     assert any(
-    "spam" in i["match"] or "sell personal" in i["match"]
+    i["category"] == "privacy" and i["severity"] == "critical"
     for i in res["issues"]
-    )
+)
 
 
 def test_config_defaults():

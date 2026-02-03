@@ -5,7 +5,6 @@ import app.api.routes as routes
 
 client = TestClient(app)
 
-
 def test_root():
     res = client.get("/")
     assert res.status_code == 200
@@ -13,7 +12,7 @@ def test_root():
 
 
 def test_process_document_success(monkeypatch, tmp_path):
-    async def fake_run(file_path, user_request):
+    async def fake_run(file_path, user_request, tracer=None):
         return {"summary": "ok", "extraction": {"title": "t"}}
 
     monkeypatch.setattr(routes, "run_document_workflow", fake_run)
@@ -28,7 +27,7 @@ def test_process_document_success(monkeypatch, tmp_path):
 
 
 def test_process_document_failure(monkeypatch):
-    async def fake_run(file_path, user_request):
+    async def fake_run(file_path, user_request, tracer=None):
         return {"error": "failed to extract"}
 
     monkeypatch.setattr(routes, "run_document_workflow", fake_run)
@@ -39,7 +38,7 @@ def test_process_document_failure(monkeypatch):
 
 
 def test_process_document_exception(monkeypatch):
-    async def fake_run(file_path, user_request):
+    async def fake_run(file_path, user_request, tracer=None):
         raise Exception("boom")
 
     monkeypatch.setattr(routes, "run_document_workflow", fake_run)

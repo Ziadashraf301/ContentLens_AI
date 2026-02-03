@@ -38,22 +38,23 @@ async def router_node(state: AgentState):
             logger.error(f"Critical: Both Ollama and Cohere failed. {cohere_error}")
             return {}
         
-        logger.info(f"Router: Fanning out to {len(decisions)} tasks in parallel: {decisions}")
+    logger.info(f"Router: Fanning out to {len(decisions)} tasks in parallel: {decisions}")
         
-        # Map task names to node names
-        task_to_node = {
-            "summarize": "node_summarize",
-            "translate": "node_translate",
-            "analyze": "node_analyze",
-            # "recommend": "node_recommend",
-            "ideate": "node_ideate",
-            "copywrite": "node_copywrite",
-            "compliance": "node_compliance",
-        }
+    # Map task names to node names
+    task_to_node = {
+        "summarize": "node_summarize",
+        "translate": "node_translate",
+        "analyze": "node_analyze",
+        # "recommend": "node_recommend",
+        "ideate": "node_ideate",
+        "copywrite": "node_copywrite",
+        "compliance": "node_compliance",
+    }
         
-        # Create Send objects for parallel execution
-        sends = [Send(task_to_node[task], state) for task in decisions if task in task_to_node]
+    # Create Send objects for parallel execution
+    sends = [Send(task_to_node[task], state) for task in decisions if task in task_to_node]
         
-        return Command(
+    return Command(
         update={"next_steps": decisions},
-        goto=sends  )
+        goto=sends  
+    )

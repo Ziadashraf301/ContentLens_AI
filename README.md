@@ -63,6 +63,9 @@ Please follow these responsible marketing guidelines:
 
 ## ✨ Architecture & Technology Stack
 
+![graph_sample](images/graph_sample.png)
+
+
 ### Core Orchestration & Observability
 - **LangGraph:** Orchestrates parallel agent execution and workflow state management
 - **LangChain:** Foundation for prompt templates, chains, and agent interactions

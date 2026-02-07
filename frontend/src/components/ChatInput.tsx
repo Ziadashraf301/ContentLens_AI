@@ -136,7 +136,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         type: 'audio',
         size: data.blob.size,
         mimeType: data.mimeType,
-        file: data.blob,
+        file: new File([data.blob], `audio-${Date.now()}.webm`, { type: data.mimeType }),
         preview: URL.createObjectURL(data.blob),
       };
 

@@ -4,9 +4,9 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import ChatMessage from './ChatMessage';
-import ChatInput from './ChatInput';
-import Loader from './Loader';
+import ChatMessage from '../components/ChatMessage';
+import ChatInput from '../components/ChatInput';
+import Loader from '../components/Loader';
 import {
   ChatMessage as ChatMessageType,
   ChatSession,

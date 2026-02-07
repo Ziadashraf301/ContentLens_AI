@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import UploadPage from '../pages/UploadPage';
-import ChatPage from '../pages/ChatPage';
+import UploadPage from './pages/UploadPage';
+import ChatPage from './pages/ChatPage';
 
 const App: React.FC = () => {
   return (

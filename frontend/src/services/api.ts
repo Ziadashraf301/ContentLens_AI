@@ -3,6 +3,9 @@
 // (prevents exposing raw deployment IPs such as http://174.129.170.30:3000/).
 const API_BASE = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
 
+// Export for chat service
+export const API_BASE_URL = API_BASE || 'http://localhost:8000';
+
 export const analyzeDocument = (
   file: File,
   request: string,

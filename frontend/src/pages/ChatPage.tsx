@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ChatMessage from '../components/ChatMessage';
 import ChatInput from '../components/ChatInput';
-import Loader from '../components/Loader';
+import { Loader } from '../components/Loader';
 import {
   ChatMessage as ChatMessageType,
   ChatSession,

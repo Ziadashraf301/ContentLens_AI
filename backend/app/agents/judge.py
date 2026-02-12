@@ -2,7 +2,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from ..models.schemas.EvaluationOutput import EvaluationOutput
+from ..models.schemas.helpers.EvaluationOutput import EvaluationOutput
 from ..core.config import settings
 from ..core.logging import logger
 from ..core.langfuse import trace_agent_execution

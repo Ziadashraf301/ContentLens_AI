@@ -1,7 +1,7 @@
 from typing import Dict, List
 import re
 from ..core.logging import logger
-from ..models.schemas.Compliance import (Severity, ComplianceCategory, ComplianceRule, Issue, ComplianceReport)
+from ..models.schemas.helpers.Compliance import (Severity, ComplianceCategory, ComplianceRule, Issue, ComplianceReport)
 from datetime import datetime
 
 class ComplianceAgent:

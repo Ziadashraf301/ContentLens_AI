@@ -2,8 +2,8 @@ import os
 import shutil
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from ..workflows.process_document import run_document_workflow
-from ..models.schemas.ScoreRequest import ScoreRequest
-from ..models.schemas.AnalysisResponse import AnalysisResponse
+from ..models.schemas.requests.ScoreRequest import ScoreRequest
+from ..models.schemas.responses.AnalysisResponse import AnalysisResponse
 from ..core.logging import logger
 from ..core.langfuse import get_langfuse_tracer
 from langfuse import propagate_attributes

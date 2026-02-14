@@ -33,7 +33,7 @@ export async function sendChatMessage(
     
     formData.append('timestamp', payload.timestamp);
 
-    const response = await fetch(`${API_BASE_URL}/chat/message`, {
+    const response = await fetch(`${API_BASE_URL}/api/chat/message`, {
       method: 'POST',
       body: formData,
       // Note: Don't set Content-Type header; browser will set it automatically with boundary
@@ -67,7 +67,7 @@ export async function streamChatResponse(
   onComplete: () => void
 ): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/stream?session_id=${sessionId}`);
+    const response = await fetch(`${API_BASE_URL}/api/chat/stream?session_id=${sessionId}`);
 
     if (!response.ok) {
       throw new Error(`Stream error: ${response.statusText}`);

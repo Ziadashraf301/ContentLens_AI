@@ -55,6 +55,7 @@ async def send_message(
         raise HTTPException(status_code=404, detail="Session not found")
     
     file_path = None
+    file_attachment = None  
 
     if file:
         # Create temp directory if not exists
@@ -64,6 +65,15 @@ async def send_message(
             # Save file locally for processing
             file_path = await save_file_locally(temp_dir, file)
             logger.info(f"API: Received file {file.filename}. Request: {text}")
+            
+            # Create attachment object
+            file_attachment = {
+                "id": str(uuid.uuid4()),
+                "filename": file.filename,
+                "content_type": file.content_type,
+                "size": file.size,
+                "path": file_path,
+            }
 
         except Exception as e:
             logger.error(f"Error saving uploaded file: {e}")
@@ -76,32 +86,38 @@ async def send_message(
         "role": "user",
         "messageType": message_type,
         "text": text,
-        "attachments": file_path,
+        "attachments": [file_attachment] if file_attachment else [],
         "timestamp": timestamp,
     }
     
     messages[session_id] = [user_message]
     
-    # IMPORTANT: Here you'll integrate with your LangGraph workflow
-    ai_response = await run_chat_workflow(user_request=text, file_path=file_path, message_type=message_type, tracer=None)
+    # Integrate with LangGraph workflow
+    ai_response = await run_chat_workflow(
+        user_request=text, 
+        file_path=file_path,
+        message_type=message_type, 
+        tracer=None
+    )
     
-    # For now, return a mock AI response
+    # AI response message
     ai_message = {
         "message_id": str(uuid.uuid4()),
         "session_id": session_id,
         "role": "ai",
         "messageType": "text",
         "text": f"Processing: {ai_response['response'] if ai_response else 'No response generated'}",
-        "attachments": file_path,
+        "attachments": [],
         "timestamp": datetime.now(timezone.utc),
     }
     
     messages[session_id].append(ai_message)
 
     logger.info(f"Processed message for session {session_id}. User message: {text if text else 'File uploaded'}")
-
-    # Cleanup the temp file after processing
-    if os.path.exists(file_path):
-         os.remove(file_path)
+    
+    if file:
+        # Cleanup the temp file after processing
+        if os.path.exists(file_path):
+            os.remove(file_path)
     
     return ai_message

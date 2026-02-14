@@ -6,6 +6,7 @@ from ..models.schemas.requests.ScoreRequest import ScoreRequest
 from ..models.schemas.responses.AnalysisResponse import AnalysisResponse
 from ..core.logging import logger
 from ..core.langfuse import get_langfuse_tracer
+from ..utils.file_utils import save_file_locally
 from langfuse import propagate_attributes
 
 router = APIRouter()
@@ -24,14 +25,12 @@ async def process_document(
     
     # Create temp directory if not exists
     temp_dir = "temp_uploads"
-    os.makedirs(temp_dir, exist_ok=True)
-    file_path = os.path.join(temp_dir, file.filename)
+    file_path = None
 
     try:
         # Save file locally for processing
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
+        file_path = await save_file_locally(temp_dir, file)
+
         logger.info(f"API: Received file {file.filename}. Request: {user_request}")
 
         # START TRACER HERE
@@ -89,7 +88,7 @@ async def process_document(
                 return result
 
     except HTTPException:
-        raise  # Re-raise HTTP exceptions as-is
+        raise
         
     except Exception as e:
         logger.error(f"API Error: {str(e)}")

@@ -100,3 +100,43 @@
 2026-02-12 22:33:08 | INFO | ContentLens_AI | Processed message for session 777d6b28-d2d2-4759-b158-3942ec3b2c1b. User message: hi solve this 
 2026-02-12 22:33:17 | INFO | ContentLens_AI | API: Received file Finetune VLMs for Complex Arabic OCR_ The Complete 3.5-Hour Masterclass.mp4. Request: hi solve this 
 2026-02-12 22:33:17 | INFO | ContentLens_AI | Processed message for session 777d6b28-d2d2-4759-b158-3942ec3b2c1b. User message: hi solve this 
+2026-02-14 21:10:26 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_Data_Engineer.pdf. Request: Analyze this document
+2026-02-14 21:10:26 | ERROR | ContentLens_AI | FileLoader error on temp_uploads\7647c984-2c95-4fe9-ac6f-fe7306d86155_Ziad_Ashraf_Data_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-02-14 21:10:26 | ERROR | ContentLens_AI | Workflow Critical Error: Failed to process file: PyPDF2 is required to load PDF files
+2026-02-14 21:11:36 | INFO | ContentLens_AI | API: Received file Ziad_Ashraf_Data_Engineer.pdf. Request: Analyze this document
+2026-02-14 21:11:36 | ERROR | ContentLens_AI | FileLoader error on temp_uploads\6ccb76fa-f1c6-49c1-aba9-2abe14f87315_Ziad_Ashraf_Data_Engineer.pdf: PyPDF2 is required to load PDF files
+2026-02-14 21:11:36 | ERROR | ContentLens_AI | Workflow Critical Error: Failed to process file: PyPDF2 is required to load PDF files
+2026-02-14 21:11:44 | INFO | ContentLens_AI | API: Received file customer_service.docx. Request: Analyze this document
+2026-02-14 21:11:44 | ERROR | ContentLens_AI | FileLoader error on temp_uploads\e2a5e25b-3daa-4c36-b257-88c1ead5a8a4_customer_service.docx: python-docx is required to load DOCX files
+2026-02-14 21:11:44 | ERROR | ContentLens_AI | Workflow Critical Error: Failed to process file: python-docx is required to load DOCX files
+2026-02-14 21:12:19 | INFO | ContentLens_AI | API: Received file Screenshot 2026-02-06 113915.png. Request: Analyze this document
+2026-02-14 21:12:19 | INFO | ContentLens_AI | Handoff: Sending image to OCR tool: temp_uploads\8b849e48-d71c-4c60-adbe-1a7acf7d00ae_Screenshot 2026-02-06 113915.png
+2026-02-14 21:12:19 | INFO | ContentLens_AI | Tool: Starting OCR for temp_uploads\8b849e48-d71c-4c60-adbe-1a7acf7d00ae_Screenshot 2026-02-06 113915.png
+2026-02-14 21:12:20 | ERROR | ContentLens_AI | OCR Tool Error: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-02-14 21:12:20 | ERROR | ContentLens_AI | Workflow failed: No text extracted from temp_uploads\8b849e48-d71c-4c60-adbe-1a7acf7d00ae_Screenshot 2026-02-06 113915.png
+2026-02-14 21:12:55 | INFO | ContentLens_AI | API: Received file Screenshot 2026-02-06 113915.png. Request: Analyze this document
+2026-02-14 21:12:55 | INFO | ContentLens_AI | Handoff: Sending image to OCR tool: temp_uploads\830df976-c548-4a50-85b8-ab9fbd42f6e9_Screenshot 2026-02-06 113915.png
+2026-02-14 21:12:55 | INFO | ContentLens_AI | Tool: Starting OCR for temp_uploads\830df976-c548-4a50-85b8-ab9fbd42f6e9_Screenshot 2026-02-06 113915.png
+2026-02-14 21:12:56 | ERROR | ContentLens_AI | OCR Tool Error: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-02-14 21:12:56 | ERROR | ContentLens_AI | Workflow failed: No text extracted from temp_uploads\830df976-c548-4a50-85b8-ab9fbd42f6e9_Screenshot 2026-02-06 113915.png
+2026-02-14 21:16:43 | INFO | ContentLens_AI | API: Received file customer_service.docx. Request: Analyze this document
+2026-02-14 21:16:43 | INFO | ContentLens_AI | Loading DOCX file: temp_uploads\1d1dabd8-fd68-49cb-9822-65268624c635_customer_service.docx
+2026-02-14 21:16:44 | INFO | ContentLens_AI | Tool: Language detected as 'en'
+2026-02-14 21:16:44 | INFO | ContentLens_AI | Workflow: Handing off to LangGraph...
+2026-02-14 21:16:44 | INFO | ContentLens_AI | --- NODE: EXTRACTION ---
+2026-02-14 21:16:46 | INFO | ContentLens_AI | Agent: Extractor parsing document...
+2026-02-14 21:16:50 | INFO | ContentLens_AI | Agent: Extractor parsing document...
+2026-02-14 21:16:54 | INFO | ContentLens_AI | Agent: Extractor parsing document...
+2026-02-14 21:16:57 | WARNING | ContentLens_AI | Ollama failed permanently. Attempting Cohere fallback... Error: All connection attempts failed
+2026-02-14 21:17:01 | INFO | ContentLens_AI | Successfully recovered extraction using Cohere.
+2026-02-14 21:17:02 | INFO | ContentLens_AI | Judge: Evaluating extraction output...
+2026-02-14 21:17:06 | INFO | ContentLens_AI | Judge: Evaluating extraction output...
+2026-02-14 21:17:10 | INFO | ContentLens_AI | Judge: Evaluating extraction output...
+2026-02-14 21:17:13 | ERROR | ContentLens_AI | Workflow Critical Error: All connection attempts failed
+2026-02-14 22:06:44 | INFO | ContentLens_AI | Created new session: 5fe26288-f3c1-4338-8a14-11b967465e6c
+2026-02-14 22:06:45 | INFO | ContentLens_AI | Created new session: 3a088909-1e45-4c47-9616-64230de3657c
+2026-02-14 22:06:47 | INFO | ContentLens_AI | Created new session: 3a0013cf-defa-4f79-bff7-c76bd807c893
+2026-02-14 22:06:49 | INFO | ContentLens_AI | Created new session: 253a0b39-ee2b-481d-a3ee-d55dcec1ad47
+2026-02-14 22:07:53 | INFO | ContentLens_AI | API: Received file customer_service.docx. Request: adsdsf
+2026-02-14 22:07:53 | WARNING | ContentLens_AI | Tracer not provided to workflow, creating new one
+2026-02-14 22:07:54 | INFO | ContentLens_AI | Processed message for session 253a0b39-ee2b-481d-a3ee-d55dcec1ad47. User message: adsdsf

@@ -120,7 +120,7 @@ export async function streamChatResponse(
  */
 export async function createChatSession(): Promise<string> {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/session`, {
+    const response = await fetch(`${API_BASE_URL}/api/chat/session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export async function createChatSession(): Promise<string> {
  */
 export async function fetchChatSessions(): Promise<ChatSession[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/sessions`, {
+    const response = await fetch(`${API_BASE_URL}/api/chat/sessions`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -173,7 +173,7 @@ export async function fetchChatSessions(): Promise<ChatSession[]> {
 export async function fetchChatHistory(sessionId: string): Promise<ChatMessageResponse[]> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/chat/sessions/${sessionId}/messages`,
+      `${API_BASE_URL}/api/chat/sessions/${sessionId}/messages`,
       {
         method: 'GET',
         headers: {
@@ -200,7 +200,7 @@ export async function fetchChatHistory(sessionId: string): Promise<ChatMessageRe
  */
 export async function deleteChatSession(sessionId: string): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/chat/sessions/${sessionId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ export async function deleteChatSession(sessionId: string): Promise<void> {
 export async function clearChatSession(sessionId: string): Promise<void> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/chat/sessions/${sessionId}/clear`,
+      `${API_BASE_URL}/api/chat/sessions/${sessionId}/clear`,
       {
         method: 'POST',
         headers: {
@@ -252,7 +252,7 @@ export async function regenerateLastResponse(
   sessionId: string
 ): Promise<ChatMessageResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}/regenerate`, {
+    const response = await fetch(`${API_BASE_URL}/api/chat/sessions/${sessionId}/regenerate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

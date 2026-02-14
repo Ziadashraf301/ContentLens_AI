@@ -1,12 +1,14 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile, Form
 from fastapi.responses import StreamingResponse
-import json
 import uuid
+import os
 from datetime import datetime, timezone
+
+from ..models.schemas.helpers.MessageType import MessageType
 from ..core.logging import logger
 from ..models.schemas.responses.SessionCreationResponse import SessionCreationResponse
-import shutil
-import os
+from ..utils.file_utils import save_file_locally
+from ..workflows.chat_with_agents import run_chat_workflow
 
 chat_router = APIRouter(prefix='/chat', tags=["chat"])
 
@@ -41,7 +43,7 @@ async def create_session():
 @chat_router.post("/message")
 async def send_message(
     session_id: str = Form(...),
-    message_type: str = Form(...),
+    message_type: MessageType = Form(...),
     text: str = Form(default=None),
     file: UploadFile = File(default=None),
     timestamp: datetime = Form(...),
@@ -57,14 +59,10 @@ async def send_message(
     if file:
         # Create temp directory if not exists
         temp_dir = "temp_uploads"
-        os.makedirs(temp_dir, exist_ok=True)
-        file_path = os.path.join(temp_dir, f"{uuid.uuid4()}_{file.filename}")
 
         try:
             # Save file locally for processing
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-            
+            file_path = await save_file_locally(temp_dir, file)
             logger.info(f"API: Received file {file.filename}. Request: {text}")
 
         except Exception as e:
@@ -85,8 +83,7 @@ async def send_message(
     messages[session_id] = [user_message]
     
     # IMPORTANT: Here you'll integrate with your LangGraph workflow
-    # Example:
-    # ai_response = await process_with_agents(text, file, message_type)
+    ai_response = await run_chat_workflow(user_request=text, file_path=file_path, message_type=message_type, tracer=None)
     
     # For now, return a mock AI response
     ai_message = {
@@ -94,7 +91,7 @@ async def send_message(
         "session_id": session_id,
         "role": "ai",
         "messageType": "text",
-        "text": f"Processing: {text if text else 'File uploaded'}",
+        "text": f"Processing: {ai_response['response'] if ai_response else 'No response generated'}",
         "attachments": file_path,
         "timestamp": datetime.now(timezone.utc),
     }

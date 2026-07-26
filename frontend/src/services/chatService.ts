@@ -9,9 +9,9 @@ import { API_BASE_URL } from './api';
 
 /**
  * Send a message to the backend
- * Handles both text and multimodal payloads
+ * Handles text, multimodal payloads, and lead search requests
  * 
- * @param payload - Message payload with optional file
+ * @param payload - Message payload with optional file and lead search flag
  * @returns Promise with AI response
  */
 export async function sendChatMessage(
@@ -33,10 +33,13 @@ export async function sendChatMessage(
     
     formData.append('timestamp', payload.timestamp);
 
-    const response = await fetch(`${API_BASE_URL}/api/chat/message`, {
+    if (payload.is_lead_search) {
+      formData.append('is_lead_search', 'true');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat/message`, {
       method: 'POST',
       body: formData,
-      // Note: Don't set Content-Type header; browser will set it automatically with boundary
     });
 
     if (!response.ok) {
@@ -55,11 +58,6 @@ export async function sendChatMessage(
 
 /**
  * Stream chat response using Server-Sent Events (SSE)
- * Optional: Use for real-time streaming responses
- * 
- * @param sessionId - Current session ID
- * @param onChunk - Callback for each streamed text chunk
- * @param onComplete - Callback when stream completes
  */
 export async function streamChatResponse(
   sessionId: string,
@@ -67,7 +65,7 @@ export async function streamChatResponse(
   onComplete: () => void
 ): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chat/stream?session_id=${sessionId}`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat/stream?session_id=${sessionId}`);
 
     if (!response.ok) {
       throw new Error(`Stream error: ${response.statusText}`);
@@ -88,7 +86,6 @@ export async function streamChatResponse(
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
 
-      // Process complete lines
       for (let i = 0; i < lines.length - 1; i++) {
         const line = lines[i];
         if (line.startsWith('data: ')) {
@@ -97,11 +94,9 @@ export async function streamChatResponse(
         }
       }
 
-      // Keep incomplete line in buffer
       buffer = lines[lines.length - 1];
     }
 
-    // Process final buffer
     if (buffer.startsWith('data: ')) {
       onChunk(buffer.slice(6));
     }
@@ -115,12 +110,10 @@ export async function streamChatResponse(
 
 /**
  * Create a new chat session
- * 
- * @returns Promise with new session ID
  */
 export async function createChatSession(): Promise<string> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chat/session`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat/session`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -141,12 +134,10 @@ export async function createChatSession(): Promise<string> {
 
 /**
  * Fetch all chat sessions for the user
- * 
- * @returns Promise with array of chat sessions
  */
 export async function fetchChatSessions(): Promise<ChatSession[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chat/sessions`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat/sessions`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -160,20 +151,17 @@ export async function fetchChatSessions(): Promise<ChatSession[]> {
     return await response.json();
   } catch (error) {
     console.error('Failed to fetch sessions:', error);
-    return []; // Return empty array on error
+    return [];
   }
 }
 
 /**
  * Fetch chat history for a specific session
- * 
- * @param sessionId - ID of the session
- * @returns Promise with array of messages
  */
 export async function fetchChatHistory(sessionId: string): Promise<ChatMessageResponse[]> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/chat/sessions/${sessionId}/messages`,
+      `${API_BASE_URL}/api/v1/chat/sessions/${sessionId}/messages`,
       {
         method: 'GET',
         headers: {
@@ -195,12 +183,10 @@ export async function fetchChatHistory(sessionId: string): Promise<ChatMessageRe
 
 /**
  * Delete a chat session
- * 
- * @param sessionId - ID of the session to delete
  */
 export async function deleteChatSession(sessionId: string): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chat/sessions/${sessionId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat/sessions/${sessionId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -218,13 +204,11 @@ export async function deleteChatSession(sessionId: string): Promise<void> {
 
 /**
  * Clear all messages in a session
- * 
- * @param sessionId - ID of the session
  */
 export async function clearChatSession(sessionId: string): Promise<void> {
   try {
     const response = await fetch(
-      `${API_BASE_URL}/api/chat/sessions/${sessionId}/clear`,
+      `${API_BASE_URL}/api/v1/chat/sessions/${sessionId}/clear`,
       {
         method: 'POST',
         headers: {
@@ -244,15 +228,12 @@ export async function clearChatSession(sessionId: string): Promise<void> {
 
 /**
  * Regenerate the last AI response
- * 
- * @param sessionId - ID of the session
- * @returns Promise with regenerated message
  */
 export async function regenerateLastResponse(
   sessionId: string
 ): Promise<ChatMessageResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/chat/sessions/${sessionId}/regenerate`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/chat/sessions/${sessionId}/regenerate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

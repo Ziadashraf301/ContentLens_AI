@@ -16,7 +16,7 @@ export const analyzeDocument = (
   formData.append('user_request', request);
   // If request is empty, signal backend to run extractor+router flow
 
-  const endpoint = API_BASE ? `${API_BASE}/api/process-document` : '/api/process-document';
+  const endpoint = API_BASE ? `${API_BASE}/api/v1/documents/process-document` : '/api/v1/documents/process-document';
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

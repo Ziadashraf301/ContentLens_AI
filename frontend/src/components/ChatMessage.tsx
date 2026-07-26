@@ -22,7 +22,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const [copied, setCopied] = useState(false);
 
   const isUserMessage = message.role === 'user';
-  const isStreaming = isLastMessage && message.status === 'sending';
+  const isStreaming = isLastMessage && !isUserMessage && message.status === 'sending';
 
   /**
    * Copy message text to clipboard
@@ -180,7 +180,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     >
       {/* Avatar/Role indicator */}
       <div className="chat-message__avatar">
-        {isUserMessage ? '👤' : '🤖'}
+        {isUserMessage ? (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1.15rem', height: '1.15rem' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '1.15rem', height: '1.15rem' }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l-.813-5.096L3 15l5.096-.813L9 9l.813 5.096L15 15l-5.096.813zM18.666 5.666L18 9l-.666-3.334L14 5l3.334-.666L18 1l.666 3.334L22 5l-3.334.666z" />
+          </svg>
+        )}
       </div>
 
       {/* Message content */}
@@ -213,34 +221,45 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             minute: '2-digit',
           })}
         </div>
+
+        {/* Action buttons */}
+        {!isUserMessage && (
+          <div className="chat-message__actions">
+            {message.text && (
+              <button
+                className="chat-message__action-btn"
+                onClick={handleCopyText}
+                title={copied ? 'Copied!' : 'Copy message'}
+                aria-label="Copy message"
+              >
+                {copied ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" style={{ width: '0.9rem', height: '0.9rem', display: 'block', color: '#10b981' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '0.9rem', height: '0.9rem', display: 'block' }}>
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                  </svg>
+                )}
+              </button>
+            )}
+
+            {isLastMessage && onRegenerateClick && (
+              <button
+                className="chat-message__action-btn"
+                onClick={onRegenerateClick}
+                title="Regenerate response"
+                aria-label="Regenerate response"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: '0.9rem', height: '0.9rem', display: 'block' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Action buttons */}
-      {!isUserMessage && (
-        <div className="chat-message__actions">
-          {message.text && (
-            <button
-              className="chat-message__action-btn"
-              onClick={handleCopyText}
-              title={copied ? 'Copied!' : 'Copy message'}
-              aria-label="Copy message"
-            >
-              {copied ? '✓' : '📋'}
-            </button>
-          )}
-
-          {isLastMessage && onRegenerateClick && (
-            <button
-              className="chat-message__action-btn"
-              onClick={onRegenerateClick}
-              title="Regenerate response"
-              aria-label="Regenerate response"
-            >
-              🔄
-            </button>
-          )}
-        </div>
-      )}
 
       {/* Retry button for failed messages */}
       {message.status === 'error' && onRetry && (

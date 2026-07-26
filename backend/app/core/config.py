@@ -1,75 +1,26 @@
-from functools import lru_cache
-from pydantic_settings import BaseSettings
-from typing import Optional
-
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List
 
 class Settings(BaseSettings):
-    """
-    Central application configuration.
-    Loaded once and shared across the app.
-    """
-
-    # App
-    APP_NAME: str = "ContentLens_AI"
+    PROJECT_NAME: str = "SalesLens AI"
+    API_V1_STR: str = "/api/v1"
+    
+    # Environment
     ENV: str = "development"
     LOG_LEVEL: str = "INFO"
+    
+    # CORS
+    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    
+    # Auth
+    SECRET_KEY: str = "change_this_to_a_secure_random_string_in_production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    
+    # Models & Services
+    LITELLM_API_BASE: str = "http://localhost:4000"  # Default LiteLLM proxy
+    DEFAULT_MODEL: str = "llama-3-8b"
+    
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
-    # Ollama (LLM Runtime)
-    OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL_EXTRACTOR: str = "llama3.1"
-    OLLAMA_MODEL_ROUTER: str = "mistral"
-    OLLAMA_MODEL_REFINER: str = "llama3.1"
-    OLLAMA_MODEL_JUDGE: str = "llama3.1"
-
-    OLLAMA_MODEL_SUMMARIZER: str = "llama3.1"
-    OLLAMA_MODEL_TRANSLATOR: str = "mistral"
-    OLLAMA_MODEL_ANALYZER: str = "llama3.1"
-    OLLAMA_MODEL_RECOMMENDER: str = "llama3.1"
-
-    # Marketing / additional models
-    OLLAMA_MODEL_IDEATION: str = "llama3.1"
-    OLLAMA_MODEL_COPYWRITER: str = "llama3.1"
-
-    # Model Temperatures
-    TEMPERATURE_EXTRACTOR: float = 0.0
-    TEMPERATURE_ROUTER: float = 0.0
-    TEMPERATURE_REFINER: float = 0.2
-    TEMPERATURE_JUDGE: float = 0.0
-    TEMPERATURE_SUMMARIZER: float = 0.3
-    TEMPERATURE_TRANSLATOR: float = 0.0
-    TEMPERATURE_ANALYZER: float = 0.2
-    TEMPERATURE_RECOMMENDER: float = 0.3
-    TEMPERATURE_IDEATION: float = 0.7
-    TEMPERATURE_COPYWRITER: float = 0.5
-
-    # Langfuse (Observability)
-    LANGFUSE_PUBLIC_KEY: Optional[str] = None
-    LANGFUSE_SECRET_KEY: Optional[str] = None
-    LANGFUSE_BASE_URL: str = "https://cloud.langfuse.com"
-
-    # File Processing
-    MAX_FILE_SIZE_MB: int = 20
-    ALLOWED_EXTENSIONS: str = "pdf,docx,txt,png,jpg,jpeg,gif"
-
-    # Evaluation
-    EVALUATION: bool = True
-
-    COHERE_API_KEY: Optional[str] = None
-    COHERE_MODEL: str = 'command-a-03-2025'
-
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
-
-
-@lru_cache
-def get_settings() -> Settings:
-    """
-    Cached settings object.
-    Ensures settings are loaded once per process.
-    """
-    return Settings()
-
-
-# Global settings instance (safe to import anywhere)
-settings = get_settings()
+settings = Settings()

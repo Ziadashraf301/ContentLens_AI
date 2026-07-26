@@ -44,6 +44,7 @@ export interface ChatMessagePayload {
   text?: string;
   file?: File | Blob; // Will be sent as FormData
   timestamp: string;
+  is_lead_search?: boolean;
 }
 
 /**

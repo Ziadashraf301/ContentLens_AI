@@ -1,34 +1,26 @@
 import logging
-from logging.handlers import RotatingFileHandler
+import structlog
 from app.core.config import settings
-import os
 
-# Logger Formatter
-formatter = logging.Formatter(
-    fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
+def setup_logging():
+    # Setup basic logging format
+    logging.basicConfig(
+        format="%(message)s",
+        level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
+    )
 
-# Console Handler
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
-
-os.makedirs("logs", exist_ok=True)
-
-# File Handler (Rotating)
-# Prevents logs from growing forever
-# Keeps 3 backups, 5MB each
-file_handler = RotatingFileHandler(
-    filename="logs/app.log",
-    maxBytes=5 * 1024 * 1024,
-    backupCount=3,
-)
-file_handler.setFormatter(formatter)
-
-# Logger Setup
-logger = logging.getLogger(settings.APP_NAME)
-logger.setLevel(settings.LOG_LEVEL.upper())
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
-
-logger.propagate = False  # Prevent double logging if root logger is used
+    # Configure structlog
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.add_logger_name,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.JSONRenderer() if settings.ENV == "production" else structlog.dev.ConsoleRenderer()
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )

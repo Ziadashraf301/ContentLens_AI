@@ -42,6 +42,16 @@ To ensure strict data privacy and enterprise-grade scalability, we utilize open-
   - **Metrics & Logging:** Prometheus, Grafana, Loki, and Promtail.
   - **Deployment:** Dockerized containers deployed on AWS behind an NGINX reverse proxy.
 
+## 🤖 AI Workflow Engine
+
+SalesLens AI operates on five distinct orchestration workflows to handle chat, documents, leads, and voice inputs:
+
+1. **Session Chat & Document QA (Main Co-pilot):** Manages the in-memory context for the current session. Parses attachments (PDFs, DOCX, Images) using the `DocumentParserService` and queries the `DocumentQAAgent` for document-centric answers.
+2. **Lead Search Workflow (Vector DB Integration):** Triggered either by the explicit "Search Leads" button or via the **Router Agent** when a user query requires search. It queries Qdrant to find matching leads and returns clean structured cards.
+3. **Asynchronous Audio Recording (ASR):** Captures pre-recorded audio files (.webm) from the voice recorder button, transcribes them using a Whisper-based ASR pipeline, and pre-populates the text input field.
+4. **Real-Time Live Voice Loop (WebSockets):** Initiates a persistent duplex WebSocket connection for hands-free mode. Translates speech to text on the fly, processes queries, and streams TTS audio chunks back.
+5. **Session Context Summarizer (Async Background):** Triggered when a session ends or times out. Summarizes the transaction history and writes a local text summary to disk to be re-loaded on future sessions.
+
 ---
 
 *For detailed implementation steps, AI architecture, and sprint planning, please refer to the `implementation_plan.md` artifact.*

@@ -5,7 +5,8 @@ Ensures outputs meet expected formats and quality standards.
 
 import re
 from typing import Dict, Any, List
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 
 class OutputValidator:
     """Validates agent outputs against expected formats."""

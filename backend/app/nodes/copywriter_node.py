@@ -1,4 +1,5 @@
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..models.state.state import AgentState
 from ..agents.copywriter import CopywriterAgent
 from ..utils.output_validator import OutputValidator

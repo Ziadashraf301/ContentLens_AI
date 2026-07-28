@@ -1,6 +1,7 @@
 import re
 import unicodedata
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 
 class BriefValidator:
     """

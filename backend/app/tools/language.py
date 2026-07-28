@@ -1,5 +1,6 @@
 from langdetect import detect, DetectorFactory
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 
 # Ensures consistent results
 DetectorFactory.seed = 0

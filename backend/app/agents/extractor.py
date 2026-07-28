@@ -3,7 +3,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from ..core.config import settings
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..core.langfuse import trace_agent_execution
 from ..core.rate_limiter import ollama_gpu_limit
 

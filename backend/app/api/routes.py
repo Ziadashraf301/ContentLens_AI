@@ -4,7 +4,8 @@
 # from ..workflows.process_document import run_document_workflow
 # from ..models.schemas.requests.ScoreRequest import ScoreRequest
 # from ..models.schemas.responses.AnalysisResponse import AnalysisResponse
-# from ..core.logging import logger
+# import structlog
+logger = structlog.get_logger(__name__)
 # from ..core.langfuse import get_langfuse_tracer
 # from ..utils.file_utils import save_file_locally
 # from langfuse import propagate_attributes

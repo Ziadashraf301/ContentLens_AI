@@ -1,6 +1,7 @@
 from ..tools.file_loader import FileLoader
 from ..graphs.document_graph import app_graph
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..tools.language import detect_language
 from ..tools.validators import BriefValidator
 from ..core.langfuse import get_langfuse_callback, get_langfuse_tracer

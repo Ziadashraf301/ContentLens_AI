@@ -5,7 +5,7 @@ from app.models.schemas.responses.AnalysisResponse import AnalysisResponse
 from app.api.dependencies.auth import get_current_user, UserContext
 import structlog
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 router = APIRouter()
 doc_qa_agent = DocumentQAAgent()
 

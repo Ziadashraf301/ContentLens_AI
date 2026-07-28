@@ -1,7 +1,8 @@
 
 from ..core.rate_limiter import request_limit
 from ..core.langfuse import get_langfuse_callback, get_langfuse_tracer
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from langfuse import propagate_attributes
 import asyncio
 

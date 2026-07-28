@@ -1,6 +1,7 @@
 import pytesseract
 from PIL import Image
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 
 def perform_ocr(file_path: str) -> str:
     """

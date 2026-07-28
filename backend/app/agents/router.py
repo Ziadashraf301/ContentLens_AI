@@ -4,7 +4,8 @@ from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from ..core.rate_limiter import ollama_gpu_limit
 from ..core.config import settings
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..core.langfuse import trace_agent_execution
 
 class RouterAgent:

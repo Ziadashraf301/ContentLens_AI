@@ -5,7 +5,8 @@ import os
 from datetime import datetime, timezone
 
 from ..models.schemas.helpers.MessageType import MessageType
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..models.schemas.responses.SessionCreationResponse import SessionCreationResponse
 from ..utils.file_utils import save_file_locally
 from ..workflows.chat_with_agents import run_chat_workflow

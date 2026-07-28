@@ -1,7 +1,8 @@
 
 from langgraph.types import Send
 from ..agents.router import RouterAgent
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..models.state.state import AgentState
 from langgraph.types import Command
 from ..core.config import settings

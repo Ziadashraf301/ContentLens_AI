@@ -1,16 +1,43 @@
-# Ignore environment, compiled Python files, and editor artifacts
+# Environment files
 .env
+**/.env
+backend/.env_archived
+
+# Compiled Python files
 *.py[cod]
+**/*.py[cod]
+*$py.class
+**/$py.class
+
+# Pycache directories
 __pycache__/
+**/__pycache__/
+
+# Testing caches
+.pytest_cache/
+**/.pytest_cache/
+
+# IDE / Editor artifacts
 .vscode/
 .idea/
 .DS_Store
-.pytest_cache
-__pycache__
+**/Thumbs.db
+
+# Project-specific ignores
 error_analysis/*.json
 frontend/guides/
-backend/.env_archived
+backend/logs
+backend/app/core/logger/README.md
+
+# Virtual environments
 .venv/
-pyproject.toml
+**/venv/
+**/env/
 .python-version
+
+# Node modules
 node_modules/
+**/node_modules/
+
+# Python configuration / packaging files
+pyproject.toml

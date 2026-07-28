@@ -1,6 +1,7 @@
 from pathlib import Path
 from app.core.config import settings
-from app.core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from .ocr import perform_ocr
 from ..utils.file_utils import get_file_extension
 from ..utils.text_utils import clean_extra_whitespace

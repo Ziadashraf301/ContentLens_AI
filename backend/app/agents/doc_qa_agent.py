@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from app.core.config import settings
 import structlog
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 
 class DocumentQAAgent:
     def __init__(self):

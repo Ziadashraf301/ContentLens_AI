@@ -1,11 +1,13 @@
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..models.state.state import AgentState
 from ..agents.recommender import RecommenderAgent
 from ..utils.output_validator import OutputValidator
 from ..agents.judge import JudgeAgent
 from ..core.config import settings
 
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..models.state.state import AgentState
 from ..agents.recommender import RecommenderAgent
 from ..utils.output_validator import OutputValidator

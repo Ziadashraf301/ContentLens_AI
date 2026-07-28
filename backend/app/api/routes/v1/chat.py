@@ -14,7 +14,7 @@ from app.models.schemas.responses.SessionMessagesResponse import (
     MessageResponse
 )
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 router = APIRouter()
 doc_qa_agent = DocumentQAAgent()
 

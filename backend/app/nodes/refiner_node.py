@@ -1,4 +1,5 @@
-from ..core.logging import logger
+import structlog
+logger = structlog.get_logger(__name__)
 from ..models.state.state import AgentState
 from ..agents.refiner import RefinerAgent
 from ..agents.judge import JudgeAgent

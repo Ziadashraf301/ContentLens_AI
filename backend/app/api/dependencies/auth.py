@@ -5,7 +5,7 @@ from app.core.config import settings
 from pydantic import BaseModel
 import structlog
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 # Setting auto_error=False allows optional auth for local development
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 

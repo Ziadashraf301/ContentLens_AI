@@ -7,7 +7,7 @@ import pytesseract
 from PIL import Image
 import docx
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 
 class DocumentParserService:
     @staticmethod

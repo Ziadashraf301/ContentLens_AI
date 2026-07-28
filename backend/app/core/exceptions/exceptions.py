@@ -2,7 +2,7 @@ from fastapi import Request, status
 from fastapi.responses import JSONResponse
 import structlog
 
-logger = structlog.get_logger()
+logger = structlog.get_logger(__name__)
 
 class ApplicationException(Exception):
     def __init__(self, 

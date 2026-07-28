@@ -26,6 +26,7 @@ __pycache__/
 # Project-specific ignores
 error_analysis/*.json
 frontend/guides/
+frontend/node_modules
 backend/app/logs
 backend/app/core/logger/README.md
 

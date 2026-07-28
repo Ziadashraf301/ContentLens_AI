@@ -3,13 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core import setup_logging
 import structlog
-logger = structlog.get_logger(__name__)
 from app.core.exceptions import (ApplicationException, 
                                application_exception_handler, 
                                global_exception_handler)
-from app.api.routes.v1 import chat, documents
+from app.api.routes.v1 import chat
 
 # Setup structured logging before app starts
+logger = structlog.get_logger(__name__)
 setup_logging()
 
 app = FastAPI(
@@ -33,7 +33,6 @@ app.add_exception_handler(Exception, global_exception_handler)
 
 # API Routers
 app.include_router(chat.router, prefix=f"{settings.API_V1_STR}/chat", tags=["Chat"])
-app.include_router(documents.router, prefix=f"{settings.API_V1_STR}/documents", tags=["Documents"])
 
 logger.info("Application started")
 

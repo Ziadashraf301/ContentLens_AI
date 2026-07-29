@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, UploadFile, Form, Depends, HTTPException
 from typing import List, Optional
-from app.api.dependencies.auth import get_current_user, UserContext
+from app.api.dependencies.auth import get_current_user
+from app.models.schemas.helpers.UserContext import UserContext
 from app.services.chat_service import ChatService
 from app.models.schemas.responses.SessionMessagesResponse import (
     SessionResponse,

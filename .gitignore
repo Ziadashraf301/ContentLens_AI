@@ -29,6 +29,10 @@ frontend/guides/
 frontend/node_modules
 backend/app/logs
 backend/app/core/logger/README.md
+backend/app/core/security/README.md
+backend/app/api/dependencies/README.md
+task.md
+implementation_plan.md
 
 # Virtual environments
 .venv/

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     
     # Models & Services
     LITELLM_API_BASE: str = "http://localhost:4000"  # Default LiteLLM proxy
-    DEFAULT_MODEL: str = "llama-3-8b"
+    DEFAULT_MODEL: str = "gemini/gemini-2.5-flash"
     
     # Langfuse
     LANGFUSE_PUBLIC_KEY: str = ""

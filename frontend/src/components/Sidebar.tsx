@@ -57,6 +57,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
     navigate(`/chat/${id}`);
   };
 
+  const handleDeleteSession = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this chat session?')) return;
+    try {
+      await chatService.deleteChatSession(id);
+      await loadSessions();
+      if (activeSessionId === id) {
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Failed to delete chat session:', err);
+    }
+  };
+
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
@@ -86,22 +99,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             !collapsed && <div className="no-sessions-msg">No chats yet.</div>
           ) : (
             sessions.map((session) => (
-              <button
-                key={session.id}
-                className={`session-link-btn ${activeSessionId === session.id ? 'active' : ''}`}
-                onClick={() => handleSessionClick(session.id)}
-                title={session.title}
+              <div 
+                key={session.id} 
+                className={`session-item-container ${activeSessionId === session.id ? 'active' : ''}`}
               >
-                <span className="session-icon">💬</span>
-                {!collapsed && (
-                  <>
+                <button
+                  className="session-link-btn"
+                  onClick={() => handleSessionClick(session.id)}
+                  title={session.title}
+                >
+                  <span className="session-icon">💬</span>
+                  {!collapsed && (
                     <span className="session-title-text">{session.title}</span>
+                  )}
+                </button>
+                {!collapsed && (
+                  <div className="session-actions-wrapper">
                     {session.messageCount > 0 && (
                       <span className="session-msg-count">{session.messageCount}</span>
                     )}
-                  </>
+                    <button
+                      className="session-delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSession(session.id);
+                      }}
+                      title="Delete Session"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 )}
-              </button>
+              </div>
             ))
           )}
         </div>

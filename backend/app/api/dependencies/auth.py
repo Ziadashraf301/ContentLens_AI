@@ -2,17 +2,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from app.core.security import decode_access_token
 from app.core.config import settings
-from pydantic import BaseModel
+from app.models.schemas.helpers.UserContext import UserContext
 import structlog
 
 logger = structlog.get_logger(__name__)
 # Setting auto_error=False allows optional auth for local development
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
-
-class UserContext(BaseModel):
-    user_id: str
-    tenant_id: str
-    role: str
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserContext:
     credentials_exception = HTTPException(

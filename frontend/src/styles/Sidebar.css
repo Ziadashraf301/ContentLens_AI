@@ -77,35 +77,79 @@
   font-style: italic;
 }
 
-.session-link-btn {
+.session-item-container {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
   width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 0.75rem 0.75rem;
   border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
-.session-link-btn:hover {
+.session-item-container:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
-  transform: translateX(2px);
 }
 
-.session-link-btn.active {
+.session-item-container.active {
   background: linear-gradient(90deg, rgba(99, 102, 241, 0.2), transparent);
-  color: var(--primary-color);
   border-left: 3px solid var(--primary-color);
 }
+
+.session-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 0.75rem 0.5rem 0.75rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: color 0.2s ease;
+}
+
+.session-item-container.active .session-link-btn {
+  color: var(--primary-color);
+}
+
+.session-link-btn:hover {
+  color: var(--text-primary);
+}
+
+.session-actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-right: 0.5rem;
+}
+
+.session-delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 0.25rem;
+  opacity: 0;
+  font-size: 0.9rem;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.session-item-container:hover .session-delete-btn {
+  opacity: 0.5;
+}
+
+.session-item-container:hover .session-delete-btn:hover {
+  opacity: 1;
+  color: #ef4444;
+}
+
 
 .session-title-text {
   flex: 1;

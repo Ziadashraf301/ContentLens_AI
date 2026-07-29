@@ -42,3 +42,8 @@ node_modules/
 
 # Python configuration / packaging files
 pyproject.toml
+
+
+# Data
+
+*.json

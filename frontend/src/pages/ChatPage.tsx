@@ -27,6 +27,7 @@ export const ChatPage: React.FC = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isInitializingRef = useRef(false);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -88,37 +89,56 @@ export const ChatPage: React.FC = () => {
         // Load the session from the URL
         loadChatHistory(routeSessionId);
       } else {
-        // No session ID in URL: redirect to the most recent session or create one
+        // Prevent concurrent double-initialization (e.g. React 18 StrictMode double firing)
+        if (isInitializingRef.current) return;
+        isInitializingRef.current = true;
+
         try {
           setIsInitializing(true);
           const sessions = await chatService.fetchChatSessions();
           if (sessions.length > 0) {
             navigate(`/chat/${sessions[0].id}`, { replace: true });
           } else {
-            const newSessionId = await chatService.createChatSession();
-            // Notify sidebar
-            window.dispatchEvent(new Event('sessions-changed'));
-            navigate(`/chat/${newSessionId}`, { replace: true });
+            // Lazy Session Mode: do not auto-create session. Just clear local view.
+            setCurrentSessionId(null);
+            setMessages([]);
+            setSessionTitle('New Chat');
           }
         } catch (err) {
           console.error('Failed to initialize sessions:', err);
           setError('Failed to load sessions. Please try refreshing.');
+        } finally {
           setIsInitializing(false);
+          isInitializingRef.current = false;
         }
       }
+
     };
 
     syncSession();
   }, [routeSessionId, loadChatHistory, navigate]);
+
 
   /**
    * Handle sending a message
    */
   const handleSendMessage = useCallback(
     async (text: string, attachments: FileAttachment[], isLeadSearch = false) => {
-      if (!currentSessionId) {
-        setError('No active chat session');
-        return;
+      let sessionId = currentSessionId;
+      let isNewSession = false;
+
+      if (!sessionId) {
+        try {
+          setIsLoading(true);
+          setIsGenerating(true);
+          sessionId = await chatService.createChatSession();
+          setCurrentSessionId(sessionId);
+          isNewSession = true;
+        } catch (err) {
+          console.error('Failed to create lazy session:', err);
+          setError('Failed to create a new session. Please try again.');
+          return;
+        }
       }
 
       try {
@@ -130,7 +150,7 @@ export const ChatPage: React.FC = () => {
         const userMessageId = `msg-${Date.now()}`;
         const userMessage: ChatMessageType = {
           id: userMessageId,
-          sessionId: currentSessionId,
+          sessionId: sessionId,
           role: 'user',
           messageType: isLeadSearch ? 'text' : (attachments.length > 0 ? attachments[0].type : 'text'),
           text: isLeadSearch ? `[Lead Search] ${text}` : (text || undefined),
@@ -146,7 +166,7 @@ export const ChatPage: React.FC = () => {
         if (attachments.length > 0 && !isLeadSearch) {
           const attachment = attachments[0];
           messageToSend = {
-            session_id: currentSessionId,
+            session_id: sessionId,
             message_type: attachment.type,
             text: text || undefined,
             file: attachment.file,
@@ -154,7 +174,7 @@ export const ChatPage: React.FC = () => {
           };
         } else {
           messageToSend = {
-            session_id: currentSessionId,
+            session_id: sessionId,
             message_type: 'text',
             text: text,
             timestamp: new Date().toISOString(),
@@ -186,17 +206,21 @@ export const ChatPage: React.FC = () => {
 
         setMessages((prev) => [...prev, aiMessage]);
         
-        // Update local header title if it is currently a default placeholder or cleared session
-        if (sessionTitle === 'New Chat' || sessionTitle === 'Chat Workspace' || sessionTitle === 'Cleared Chat' || messages.length <= 1) {
-          if (text) {
-            setSessionTitle(text.substring(0, 40) + (text.length > 40 ? '...' : ''));
-          } else if (attachments.length > 0) {
-            setSessionTitle(`File: ${attachments[0].name.substring(0, 30)}`);
+        // If it was a new session, sync URL and sidebar
+        if (isNewSession) {
+          window.dispatchEvent(new Event('sessions-changed'));
+          navigate(`/chat/${sessionId}`, { replace: true });
+        } else {
+          // Update local header title if it is currently a default placeholder or cleared session
+          if (sessionTitle === 'New Chat' || sessionTitle === 'Chat Workspace' || sessionTitle === 'Cleared Chat' || messages.length <= 1) {
+            if (text) {
+              setSessionTitle(text.substring(0, 40) + (text.length > 40 ? '...' : ''));
+            } else if (attachments.length > 0) {
+              setSessionTitle(`File: ${attachments[0].name.substring(0, 30)}`);
+            }
           }
+          window.dispatchEvent(new Event('sessions-changed'));
         }
-        
-        // Notify sidebar that message counts or session title changed
-        window.dispatchEvent(new Event('sessions-changed'));
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to send message';
         setError(errorMessage);
@@ -213,7 +237,7 @@ export const ChatPage: React.FC = () => {
         setIsGenerating(false);
       }
     },
-    [currentSessionId]
+    [currentSessionId, messages, sessionTitle, navigate]
   );
 
   /**
@@ -400,10 +424,11 @@ export const ChatPage: React.FC = () => {
       {/* Input Area */}
       <ChatInput
         onSend={handleSendMessage}
-        disabled={isLoading || isGenerating || !currentSessionId}
+        disabled={isLoading || isGenerating}
       />
     </div>
   );
 };
+
 
 export default ChatPage;

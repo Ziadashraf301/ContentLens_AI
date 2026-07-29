@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import * as chatService from '../services/chatService';
 import { ChatSession } from '../types/chat';
 import '../styles/Sidebar.css';
@@ -13,7 +13,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { sessionId: activeSessionId } = useParams<{ sessionId?: string }>();
+  const location = useLocation();
+
+  const pathParts = location.pathname.split('/');
+  const activeSessionId = pathParts[1] === 'chat' ? pathParts[2] : undefined;
 
   const loadSessions = useCallback(async () => {
     try {

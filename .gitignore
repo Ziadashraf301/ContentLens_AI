@@ -33,6 +33,7 @@ backend/app/core/security/README.md
 backend/app/api/dependencies/README.md
 task.md
 implementation_plan.md
+local_run.txt
 
 # Virtual environments
 .venv/

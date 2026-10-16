@@ -9,3 +9,14 @@ __pycache__/
 __pycache__
 error_analysis/*.json
 frontend/guides/
+
+# --- secrets (added 2026-10-16) ---
+.env.*
+!.env.example
+!.env.example.*
+secrets/
+*.pem
+*service-account*.json
+*service_account*.json
+experiments/data/
+.env_*
